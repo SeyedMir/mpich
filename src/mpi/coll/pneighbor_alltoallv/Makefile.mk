@@ -13,8 +13,7 @@
 # The code for the MPI operations (e.g., MPI_SUM) is not included in 
 # mpi_sources
 mpi_sources += \
-    src/mpi/coll/ineighbor_alltoallv/ineighbor_alltoallv.c
+    src/mpi/coll/neighbor_alltoallv/neighbor_alltoallv_init.c
+    src/mpi/coll/neighbor_alltoallv/neighbor_alltoallv_start.c
 
-mpi_core_sources += \
-    src/mpi/coll/ineighbor_alltoallv/ineighbor_alltoallv_allcomm_linear.c \
-    src/mpi/coll/ineighbor_alltoallv/ineighbor_alltoallv_intra_shm.c
+#mpi_core_sources += \
