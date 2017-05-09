@@ -13,8 +13,7 @@
 # The code for the MPI operations (e.g., MPI_SUM) is not included in 
 # mpi_sources
 mpi_sources += \
-    src/mpi/coll/ineighbor_allgather/ineighbor_allgather.c
+    src/mpi/coll/neighbor_allgather/neighbor_allgather_init.c \
+    src/mpi/coll/neighbor_allgather/neighbor_allgather_start.c
 
-mpi_core_sources += \
-    src/mpi/coll/ineighbor_allgather/ineighbor_allgather_allcomm_linear.c \
-    src/mpi/coll/ineighbor_allgather/ineighbor_allgather_intra_comb.c
+# mpi_core_sources += \
