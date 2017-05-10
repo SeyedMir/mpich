@@ -200,6 +200,23 @@ int MPI_Init(int *argc, char ***argv)
 #endif
     }
 
+	//SHM
+    /* Which neighborhood implementation we want to use. 1 is message combining */
+    char *nbr_impl_env = NULL;
+    nbr_impl_env = getenv("SHM_NBR_IMPL");
+    if(nbr_impl_env == NULL)
+        nbr_impl = 0; /* set to the naive approach by default */
+    else
+        nbr_impl = atoi(nbr_impl_env);
+
+    /* What threshold to use for the friendship relationship among the processes */
+    char *nbr_frndshp_thr_env = NULL;
+    nbr_frndshp_thr_env = getenv("SHM_NBR_FRNDSHP_THR");
+    if(nbr_frndshp_thr_env == NULL)
+        nbr_frndshp_thr = 4; /* set to 4 by default */
+    else
+        nbr_frndshp_thr = atoi(nbr_frndshp_thr_env);
+
     /* ... end of body of routine ... */
     MPIR_FUNC_TERSE_INIT_EXIT(MPID_STATE_MPI_INIT);
     return mpi_errno;
