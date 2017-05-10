@@ -7,6 +7,10 @@
 #include "mpidimpl.h"
 #include "utlist.h"
 
+/* What header file should these go in? */
+int MPIDU_Sched_free(struct MPIDU_Sched *s);
+int MPIDU_Sched_make_persistent(MPIR_Sched_t *sp);
+
 /* A random guess at an appropriate value, we can tune it later.  It could also
  * be a real tunable parameter. */
 #define MPIDU_SCHED_INITIAL_ENTRIES (16)
@@ -338,15 +342,24 @@ static int MPIDU_Sched_continue(struct MPIDU_Sched *s)
 
         /* _start_entry may have completed the operation, but won't update s->idx */
         if (i == s->idx && e->status >= MPIDU_SCHED_ENTRY_STATUS_COMPLETE) {
+        	//SHMSHM
+			if(s->is_persistent)
+			{
+				//Reset the entry's state for future calls.
+				e->status = MPIDU_SCHED_ENTRY_STATUS_NOT_STARTED;
+			}
             ++s->idx;   /* this is valid even for barrier entries */
         }
 
         /* watch the indexing, s->idx might have been incremented above, so
          * ||-short-circuit matters here */
-        if (e->is_barrier && (e->status < MPIDU_SCHED_ENTRY_STATUS_COMPLETE || (s->idx != i + 1))) {
-            /* we've hit a barrier but outstanding operations before this
-             * barrier remain, so we cannot proceed past the barrier */
-            break;
+        if(s->idx != i+1) //SHM
+        {
+			if (e->is_barrier && (e->status < MPIDU_SCHED_ENTRY_STATUS_COMPLETE || (s->idx != i + 1))) {
+				/* we've hit a barrier but outstanding operations before this
+				 * barrier remain, so we cannot proceed past the barrier */
+				break;
+			}
         }
     }
   fn_exit:
@@ -384,6 +397,8 @@ int MPIDU_Sched_create(MPIR_Sched_t * sp)
     s->entries = NULL;
     s->next = NULL;     /* only needed for sanity checks */
     s->prev = NULL;     /* only needed for sanity checks */
+	//SHM
+    s->is_persistent = 0;
 
     /* this mem will be freed by the progress engine when the request is completed */
     MPIR_CHKPMEM_MALLOC(s->entries, struct MPIDU_Sched_entry *,
@@ -432,7 +447,9 @@ int MPIDU_Sched_start(MPIR_Sched_t * sp, MPIR_Comm * comm, int tag, MPIR_Request
     MPIR_FUNC_VERBOSE_ENTER(MPID_STATE_MPIDU_SCHED_START);
 
     *req = NULL;
-    *sp = MPIR_SCHED_NULL;
+	//SHM
+    if(!s->is_persistent)
+		*sp = MPIR_SCHED_NULL;
 
     /* sanity check the schedule */
     MPIR_Assert(s->num_entries <= s->size);
@@ -925,8 +942,10 @@ static int MPIDU_Sched_progress_state(struct MPIDU_Sched_state *state, int *made
                             e->status = MPIDU_SCHED_ENTRY_STATUS_COMPLETE;
                         MPIR_Request_free(e->u.send.sreq);
                         e->u.send.sreq = NULL;
-                        MPIR_Comm_release(e->u.send.comm);
-                        MPIR_Datatype_release_if_not_builtin(e->u.send.datatype);
+                        if(!s->is_persistent) {
+                            MPIR_Comm_release(e->u.send.comm);
+                            MPIR_Datatype_release_if_not_builtin(e->u.send.datatype);
+                        }
                     }
                     break;
                 case MPIDU_SCHED_ENTRY_RECV:
@@ -947,8 +966,10 @@ static int MPIDU_Sched_progress_state(struct MPIDU_Sched_state *state, int *made
                             e->status = MPIDU_SCHED_ENTRY_STATUS_COMPLETE;
                         MPIR_Request_free(e->u.recv.rreq);
                         e->u.recv.rreq = NULL;
-                        MPIR_Comm_release(e->u.recv.comm);
-                        MPIR_Datatype_release_if_not_builtin(e->u.recv.datatype);
+                        if(!s->is_persistent) {
+                            MPIR_Comm_release(e->u.recv.comm);
+                            MPIR_Datatype_release_if_not_builtin(e->u.recv.datatype);
+                        }
                     }
                     break;
                 default:
@@ -958,6 +979,9 @@ static int MPIDU_Sched_progress_state(struct MPIDU_Sched_state *state, int *made
             }
 
             if (i == s->idx && e->status >= MPIDU_SCHED_ENTRY_STATUS_COMPLETE) {
+				//SHM
+                if(s->is_persistent)
+                    e->status = MPIDU_SCHED_ENTRY_STATUS_NOT_STARTED; //Reset the entry's state for future calls. Don't do this any sooner.
                 ++s->idx;
                 MPL_DBG_MSG_D(MPIR_DBG_COMM, VERBOSE, "completed OTHER entry %d\n", (int) i);
                 if (e->is_barrier) {
@@ -998,8 +1022,18 @@ static int MPIDU_Sched_progress_state(struct MPIDU_Sched_state *state, int *made
             }
 
             s->req = NULL;
-            MPL_free(s->entries);
-            MPL_free(s);
+			//SHM
+			if(!s->is_persistent)
+			{
+				MPL_free(s->entries);
+				MPL_free(s);
+			}
+			else
+            {
+                s->idx = 0;
+                s->prev = NULL;
+                s->next = NULL;
+            }
 
             if (made_progress)
                 *made_progress = TRUE;
@@ -1026,4 +1060,53 @@ int MPIDU_Sched_progress(int *made_progress)
         MPID_Progress_deactivate_hook(MPIR_Nbc_progress_hook_id);
 
     return mpi_errno;
+}
+
+/* function for freeing the memory associated with a schedule */
+#undef FUNCNAME
+#define FUNCNAME MPIDU_Sched_free
+#undef FCNAME
+#define FCNAME MPL_QUOTE(FUNCNAME)
+int MPIDU_Sched_free(struct MPIDU_Sched *s)
+{
+    if(!s)
+        return -1;
+
+    int i;
+    for(i = 0; i < s->num_entries; i++)
+    {
+        if(s->entries[i].type == MPIDU_SCHED_ENTRY_SEND)
+        {
+            MPIR_Comm_release(s->entries[i].u.send.comm);
+            dtype_release_if_not_builtin(s->entries[i].u.send.datatype);
+        }
+        else if(s->entries[i].type == MPIDU_SCHED_ENTRY_RECV)
+        {
+            MPIR_Comm_release(s->entries[i].u.recv.comm);
+            dtype_release_if_not_builtin(s->entries[i].u.recv.datatype);
+        }
+        else if(s->entries[i].type == MPIDU_SCHED_ENTRY_COPY)
+        {
+            dtype_release_if_not_builtin(s->entries[i].u.copy.intype);
+            dtype_release_if_not_builtin(s->entries[i].u.copy.outtype);
+        }
+    }
+    if(s->entries)
+        MPL_free(s->entries);
+    MPL_free(s);
+    return 0;
+}
+
+/* function for making a schedule persistent */
+#undef FUNCNAME
+#define FUNCNAME MPIDU_Sched_make_persistent
+#undef FCNAME
+#define FCNAME MPL_QUOTE(FUNCNAME)
+int MPIDU_Sched_make_persistent(MPIR_Sched_t *sp)
+{
+    struct MPIDU_Sched *s = *sp;
+    if(!s)
+        return -1;
+    s->is_persistent = 1;
+    return 0;
 }
