@@ -22,5 +22,8 @@
 #define MPIR_Sched_reduce MPIDU_Sched_reduce
 #define MPIR_Sched_copy MPIDU_Sched_copy
 #define MPIR_Sched_barrier MPIDU_Sched_barrier
+//SHM
+#define MPIR_Sched_free MPIDU_Sched_free
+#define MPIR_Sched_make_persistent MPIDU_Sched_make_persistent
 
 #endif /* MPIR_SCHED_H_INCLUDED */
