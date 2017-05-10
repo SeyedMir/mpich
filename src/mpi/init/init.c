@@ -4,6 +4,8 @@
  *      See COPYRIGHT in top-level directory.
  */
 
+#define DEFINE_GLOBALS
+
 #include "mpiimpl.h"
 #include "mpi_init.h"
 
