@@ -4,6 +4,9 @@
  *      See COPYRIGHT in top-level directory.
  */
 
+//SHM
+#define DEFINE_GLOBALS
+
 #include <strings.h>
 
 #include "mpiimpl.h"
