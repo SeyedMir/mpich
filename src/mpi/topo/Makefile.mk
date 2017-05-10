@@ -2,9 +2,10 @@
 ##
 ## (C) 2011 by Argonne National Laboratory.
 ##     See COPYRIGHT in top-level directory.
-##
+## //SHM
 
 mpi_sources +=                          \
+    src/mpi/topo/shm_heap.c          \
     src/mpi/topo/cart_coords.c          \
     src/mpi/topo/cart_create.c          \
     src/mpi/topo/cart_get.c             \
