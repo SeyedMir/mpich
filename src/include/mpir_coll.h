@@ -889,6 +889,10 @@ int MPIR_Ineighbor_allgather_sched_intra_auto(const void *sendbuf, int sendcount
                                               MPI_Datatype sendtype, void *recvbuf, int recvcount,
                                               MPI_Datatype recvtype, MPIR_Comm * comm_ptr,
                                               MPIR_Sched_t s);
+int MPIR_Ineighbor_allgather_sched_intra_SHM(const void *sendbuf, int sendcount,
+                                             MPI_Datatype sendtype, void *recvbuf, int recvcount,
+                                             MPI_Datatype recvtype, MPIR_Comm * comm_ptr,
+                                             MPIR_Sched_t s, int persistent_coll);
 
 /* sched-based intercomm-only functions */
 int MPIR_Ineighbor_allgather_sched_inter_auto(const void *sendbuf, int sendcount,
