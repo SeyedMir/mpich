@@ -1390,6 +1390,24 @@ int MPI_Dist_graph_create_adjacent(MPI_Comm comm_old,
 
     MPIR_OBJ_PUBLISH_HANDLE(*comm_dist_graph, comm_dist_graph_ptr->handle);
     MPIR_CHKPMEM_COMMIT();
+
+	//SHM
+    if(nbr_impl == 1)
+    {
+        double build_SHM_nbh_coll_patt_time = -MPI_Wtime();
+        MPIR_Build_SHM_nbh_coll_patt(comm_dist_graph_ptr);
+        build_SHM_nbh_coll_patt_time += MPI_Wtime();
+
+        double max_build_SHM_nbh_coll_patt_time = 0;
+		MPIR_Errflag_t errflag = MPIR_ERR_NONE;
+        MPIR_Reduce_impl(&build_SHM_nbh_coll_patt_time,
+							&max_build_SHM_nbh_coll_patt_time,
+                            1, MPI_DOUBLE, MPI_MAX, 0, comm_ptr,
+							&errflag);
+        if(comm_ptr->rank == 0)
+            printf("\nTime to build the SHM neighborhood pattern (max): %lf (s)\n", max_build_SHM_nbh_coll_patt_time);
+    }
+
     /* ... end of body of routine ... */
   fn_exit:
     MPIR_FUNC_TERSE_EXIT(MPID_STATE_MPI_DIST_GRAPH_CREATE_ADJACENT);
