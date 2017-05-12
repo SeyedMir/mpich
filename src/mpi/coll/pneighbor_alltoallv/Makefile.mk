@@ -14,5 +14,6 @@
 # mpi_sources
 mpi_sources += \
     src/mpi/coll/neighbor_alltoallv/neighbor_alltoallv_init.c
+    src/mpi/coll/neighbor_alltoallv/neighbor_alltoallv_start.c
 
 #mpi_core_sources += \

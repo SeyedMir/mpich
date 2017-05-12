@@ -2,7 +2,7 @@
 ##
 ## (C) 2011 by Argonne National Laboratory.
 ##     See COPYRIGHT in top-level directory.
-## //SHM
+##
 
 mpi_sources +=                          \
     src/mpi/topo/shm_heap.c             \
