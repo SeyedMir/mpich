@@ -7,6 +7,7 @@
 mpi_sources +=                          \
     src/mpi/topo/shm_heap.c             \
 	src/mpi/topo/nhb_allgather_init.c   \
+	src/mpi/topo/nhb_allgather_start.c  \
     src/mpi/topo/cart_coords.c          \
     src/mpi/topo/cart_create.c          \
     src/mpi/topo/cart_get.c             \
