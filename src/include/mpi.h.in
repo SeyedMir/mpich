@@ -1470,6 +1470,13 @@ int MPI_Ineighbor_alltoallv(const void *sendbuf, const int sendcounts[], const i
                             MPI_Request *request)
                             MPICH_ATTR_POINTER_WITH_TYPE_TAG(1,4)
                             MPICH_ATTR_POINTER_WITH_TYPE_TAG(5,8) MPICH_API_PUBLIC;
+/* //SHM funstions for the persistent neighborhood alltoallv */
+int MPI_Neighbor_alltoallv_init(const void *sendbuf, const int sendcounts[], const int sdispls[],
+                            MPI_Datatype sendtype, void *recvbuf, const int recvcounts[],
+                            const int rdispls[], MPI_Datatype recvtype, MPI_Comm comm,
+                            MPI_Request *request)
+                            MPICH_ATTR_POINTER_WITH_TYPE_TAG(1,4)
+                            MPICH_ATTR_POINTER_WITH_TYPE_TAG(5,8);
 int MPI_Ineighbor_alltoallw(const void *sendbuf, const int sendcounts[],
                             const MPI_Aint sdispls[], const MPI_Datatype sendtypes[],
                             void *recvbuf, const int recvcounts[], const MPI_Aint rdispls[],
