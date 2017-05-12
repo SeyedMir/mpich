@@ -388,6 +388,7 @@ int MPIR_Ineighbor_alltoallw_default(const void *sendbuf, const int sendcounts[]
 //SHM
 /* SHM neighborhood collective schedule algorithms */
 int MPIR_Ineighbor_allgather_SHM(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPIR_Comm *comm_ptr, MPIR_Sched_t s, int persistent_coll);
+int MPIR_Ineighbor_alltoallv_SHM(const void *sendbuf, const int sendcounts[], const int sdispls[], MPI_Datatype sendtype, void *recvbuf, const int recvcounts[], const int rdispls[], MPI_Datatype recvtype, MPIR_Comm *comm_ptr, MPIR_Sched_t s, int persistent_coll);
 
 
 /* nonblocking collective default algorithms */

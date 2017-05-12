@@ -108,6 +108,28 @@ int compare_cmn_nbr(const void * a, const void * b);
 int print_nbh_mat(int rank, Common_nbrhood_matrix *cmn_nbh_mat, int width, char *name);
 MPI_Aint find_incom_tmp_buf_size(int **incom_sched_mat, int num_rows, MPI_Aint size_per_rank);
 MPI_Aint find_incom_tmp_buf_offset(int **incom_sched_mat, int nbr_index, MPI_Aint size_per_rank);
+int a2aV_make_all_combined_msgs(int t, int persistent_coll, void *exchange_recvbuf,
+                                int *friend_off_counts, const void *sendbuf, const int *sendcounts,
+                                const int *sdispls, const int *dests, MPI_Datatype sendtype,
+                                MPI_Aint sendtype_extent, MPI_Aint sendtype_max_extent,
+                                Common_nbrhood_matrix *cmn_nbh_mat, MPIR_Comm *comm_ptr,
+                                MPIR_Sched_t s, void **combined_sendbuf_ptr);
+int a2aV_send_to_onloaded_nbrs(int t, void *combined_sendbuf, int *friend_off_counts,
+                               const int *sendcounts, const int *sdispls, const int *dests,
+                               MPI_Datatype sendtype, MPI_Aint sendtype_extent,
+                               Common_nbrhood_matrix *cmn_nbh_mat, MPIR_Comm *comm_ptr, MPIR_Sched_t s);
+int a2aV_send_own_off_counts(int t, const int *sendcounts, Common_nbrhood_matrix *cmn_nbh_mat,
+                             MPIR_Comm *comm_ptr, MPI_Request *mpi_req_ptr, int **own_off_counts_ptr);
+int a2aV_get_friend_off_counts(int t, Common_nbrhood_matrix *cmn_nbh_mat, MPIR_Comm *comm_ptr,
+                               MPI_Request *mpi_req_ptr, int **friend_off_counts_ptr);
+int a2aV_exchange_data_with_friend(int t, int persistent_coll, const void *sendbuf,
+                                   const int *sendcounts, const int *sdispls, MPI_Datatype sendtype,
+                                   MPI_Aint sendtype_extent, MPI_Aint sendtype_max_extent,
+                                   int *own_off_counts, int *friend_off_counts,
+                                   Common_nbrhood_matrix *cmn_nbh_mat, MPIR_Comm *comm_ptr,
+                                   MPIR_Sched_t s, void **exchange_sendbuf_ptr,
+                                   void **exchange_recvbuf_ptr);
+int a2aV_find_incom_recv_count(int *incom_sched_vec, int *srcs, const int *recvcounts, int indegree);
 int find_in_arr(const int *array, int size, int value);
 int find_array_sum(const int *array, int size);
 int print_in_file(int rank, char *name);
