@@ -1405,6 +1405,11 @@ int MPIR_Neighbor_alltoallv(const void *sendbuf, const int sendcounts[], const i
 int MPIR_Neighbor_alltoallv_impl(const void *sendbuf, const int sendcounts[], const int sdispls[],
                                  MPI_Datatype sendtype, void *recvbuf, const int recvcounts[],
                                  const int rdispls[], MPI_Datatype recvtype, MPIR_Comm * comm_ptr);
+/* persistent functions */
+int MPIR_Neighbor_alltoallv_init(const void *sendbuf, const int sendcounts[], const int sdispls[],
+                                 MPI_Datatype sendtype, void *recvbuf, const int recvcounts[],
+                                 const int rdispls[], MPI_Datatype recvtype, MPIR_Comm * comm_ptr,
+                                 MPI_Request *request);
 
 /* intracomm-only functions */
 int MPIR_Neighbor_alltoallv_intra_auto(const void *sendbuf, const int sendcounts[],
