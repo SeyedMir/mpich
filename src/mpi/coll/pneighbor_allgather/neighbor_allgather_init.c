@@ -68,14 +68,14 @@ int MPIR_Neighbor_allgather_init_impl(const void *sendbuf, int sendcount, MPI_Da
     {
         if(comm_ptr->rank == 0)
             printf("Warning: Overwriting a previous shm_nbh_coll_sched!\n");
-        MPIDU_Sched_free(topo_ptr->topo.dist_graph.shm_nbh_coll_sched);
-        if(topo_ptr->topo.dist_graph.sched_mem_to_free[0])
-            /* Ideally, we should attach these memories to the
-             * schedule to avoid this ugly code here and in MPIR_Comm_free
-             */
-            MPL_free(topo_ptr->topo.dist_graph.sched_mem_to_free[0]);
-        if(topo_ptr->topo.dist_graph.sched_mem_to_free[1])
-            MPL_free(topo_ptr->topo.dist_graph.sched_mem_to_free[1]);
+        
+        /* Ideally, we should attach these memories to the
+         * schedule to avoid this ugly code here and in MPIR_Comm_free
+         */
+        MPIR_Sched_free(topo_ptr->topo.dist_graph.shm_nbh_coll_sched);
+        while(topo_ptr->topo.dist_graph.sched_mem_to_free_num_entries > 0)
+            MPL_free(topo_ptr->topo.dist_graph.sched_mem_to_free[--(topo_ptr->
+                        topo.dist_graph.sched_mem_to_free_num_entries)]);
     }
 
     MPIR_Sched_t s = MPIR_SCHED_NULL;
@@ -152,7 +152,7 @@ int MPI_Neighbor_allgather_init(const void *sendbuf, int sendcount, MPI_Datatype
 #endif /* HAVE_ERROR_CHECKING */
 
     /* Convert MPI object handles to object pointers */
-    MPID_Comm_get_ptr(comm, comm_ptr);
+    MPIR_Comm_get_ptr(comm, comm_ptr);
 
     /* Validate parameters and objects (post conversion) */
 #ifdef HAVE_ERROR_CHECKING
@@ -161,23 +161,23 @@ int MPI_Neighbor_allgather_init(const void *sendbuf, int sendcount, MPI_Datatype
         {
             if (HANDLE_GET_KIND(sendtype) != HANDLE_KIND_BUILTIN) {
                 MPIR_Datatype *sendtype_ptr = NULL;
-                MPID_Datatype_get_ptr(sendtype, sendtype_ptr);
-                MPID_Datatype_valid_ptr(sendtype_ptr, mpi_errno);
+                MPIR_Datatype_get_ptr(sendtype, sendtype_ptr);
+                MPIR_Datatype_valid_ptr(sendtype_ptr, mpi_errno);
                 if (mpi_errno != MPI_SUCCESS) goto fn_fail;
-                MPID_Datatype_committed_ptr(sendtype_ptr, mpi_errno);
+                MPIR_Datatype_committed_ptr(sendtype_ptr, mpi_errno);
                 if (mpi_errno != MPI_SUCCESS) goto fn_fail;
             }
 
             if (HANDLE_GET_KIND(recvtype) != HANDLE_KIND_BUILTIN) {
                 MPIR_Datatype *recvtype_ptr = NULL;
-                MPID_Datatype_get_ptr(recvtype, recvtype_ptr);
-                MPID_Datatype_valid_ptr(recvtype_ptr, mpi_errno);
+                MPIR_Datatype_get_ptr(recvtype, recvtype_ptr);
+                MPIR_Datatype_valid_ptr(recvtype_ptr, mpi_errno);
                 if (mpi_errno != MPI_SUCCESS) goto fn_fail;
-                MPID_Datatype_committed_ptr(recvtype_ptr, mpi_errno);
+                MPIR_Datatype_committed_ptr(recvtype_ptr, mpi_errno);
                 if (mpi_errno != MPI_SUCCESS) goto fn_fail;
             }
 
-            MPID_Comm_valid_ptr( comm_ptr, mpi_errno, FALSE );
+            MPIR_Comm_valid_ptr( comm_ptr, mpi_errno, FALSE );
             if (mpi_errno != MPI_SUCCESS) goto fn_fail;
             MPIR_ERRTEST_ARGNULL(request, "request", mpi_errno);
             /* TODO more checks may be appropriate (counts, in_place, buffer aliasing, etc) */
