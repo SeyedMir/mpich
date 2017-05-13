@@ -65,7 +65,7 @@ int MPI_Neighbor_alltoallv_start(MPI_Comm comm, MPI_Request *request)
     MPIR_FUNC_TERSE_ENTER(MPID_STATE_MPI_INEIGHBOR_ALLTOALLV_START);
 
     /* Convert MPI object handles to object pointers */
-    MPID_Comm_get_ptr(comm, comm_ptr);
+    MPIR_Comm_get_ptr(comm, comm_ptr);
 
     MPIR_Topology *topo_ptr = NULL;
     topo_ptr = MPIR_Topology_get(comm_ptr);
