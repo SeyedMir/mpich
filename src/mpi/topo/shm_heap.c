@@ -1,3 +1,9 @@
+/*---------------------------------------------------------------------*/
+/*     (C) Copyright 2017 Parallel Processing Research Laboratory      */
+/*                   Queen's University at Kingston                    */
+/*                Neighborhood Collective Communication                */
+/*                    Seyed Hessamedin Mirsadeghi                      */
+/*---------------------------------------------------------------------*/
 //SHM
 #include <stdio.h>
 #include <stdlib.h>
