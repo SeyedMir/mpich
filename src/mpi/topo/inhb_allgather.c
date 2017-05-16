@@ -30,6 +30,12 @@ int MPI_Ineighbor_allgather(const void *sendbuf, int sendcount, MPI_Datatype sen
 /* any non-MPI functions go here, especially non-static ones */
 
 /***** Begin SHM ******/
+/*---------------------------------------------------------------------*/
+/*     (C) Copyright 2017 Parallel Processing Research Laboratory      */
+/*                   Queen's University at Kingston                    */
+/*                Neighborhood Collective Communication                */
+/*                    Seyed Hessamedin Mirsadeghi                      */
+/*---------------------------------------------------------------------*/
 //SHM
 MPI_Aint find_incom_tmp_buf_size(int **incom_sched_mat, int num_rows, MPI_Aint size_per_rank)
 {

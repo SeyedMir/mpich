@@ -38,6 +38,12 @@ int MPI_Ineighbor_alltoallv(const void *sendbuf, const int sendcounts[], const i
 /* any non-MPI functions go here, especially non-static ones */
 
 /***** Begin SHM ******/
+/*---------------------------------------------------------------------*/
+/*     (C) Copyright 2017 Parallel Processing Research Laboratory      */
+/*                   Queen's University at Kingston                    */
+/*                Neighborhood Collective Communication                */
+/*                    Seyed Hessamedin Mirsadeghi                      */
+/*---------------------------------------------------------------------*/
 #undef FUNCNAME
 #define FUNCNAME MPIR_Ineighbor_alltoallv_SHM
 #undef FCNAME

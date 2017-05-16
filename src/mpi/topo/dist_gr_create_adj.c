@@ -8,6 +8,12 @@
 #include "mpiimpl.h"
 
 /************* Begin SHM *************/
+/*---------------------------------------------------------------------*/
+/*     (C) Copyright 2017 Parallel Processing Research Laboratory      */
+/*                   Queen's University at Kingston                    */
+/*                Neighborhood Collective Communication                */
+/*                    Seyed Hessamedin Mirsadeghi                      */
+/*---------------------------------------------------------------------*/
 #include <math.h>
 #include "shm_heap.h"
 int free_nbh_mat(Common_nbrhood_matrix *cmn_nbh_mat)

@@ -1,3 +1,9 @@
+/*---------------------------------------------------------------------*/
+/*     (C) Copyright 2017 Parallel Processing Research Laboratory      */
+/*                   Queen's University at Kingston                    */
+/*                Neighborhood Collective Communication                */
+/*                    Seyed Hessamedin Mirsadeghi                      */
+/*---------------------------------------------------------------------*/
 #include "mpiimpl.h"
 
 /* -- Begin Profiling Symbol Block for routine MPI_Ineighbor_allgather */

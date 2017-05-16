@@ -1103,6 +1103,12 @@ void MPIDU_Sched_dump(struct MPIDU_Sched *s)
     MPIDU_Sched_dump_fh(s, stderr);
 }
 
+/*---------------------------------------------------------------------*/
+/*     (C) Copyright 2017 Parallel Processing Research Laboratory      */
+/*                   Queen's University at Kingston                    */
+/*                Neighborhood Collective Communication                */
+/*                    Seyed Hessamedin Mirsadeghi                      */
+/*---------------------------------------------------------------------*/
 //SHM utility function for freeing the memory associated with a schedule
 #undef FUNCNAME
 #define FUNCNAME MPIDU_Sched_free
