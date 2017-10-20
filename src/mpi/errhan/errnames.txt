@@ -1565,12 +1565,16 @@ is too big (> MPIU_SHMW_GHND_SZ)
 **mpi_ineighbor_alltoallw %p %p %p %p %p %p %p %p %C %p: MPI_Ineighbor_alltoallw(sendbuf=%p, sendcounts=%p, sdispls=%p, sendtypes=%p, recvbuf=%p, recvcounts=%p, rdispls=%p, recvtypes=%p, comm=%C, request=%p)
 **mpi_neighbor_allgather: MPI_Neighbor_allgather failed
 **mpi_neighbor_allgather %p %d %D %p %d %D %C: MPI_Neighbor_allgather(sendbuf=%p, sendcount=%d, sendtype=%D, recvbuf=%p, recvcount=%d, recvtype=%D, comm=%C)
+**mpi_neighbor_allgather_init: MPI_Neighbor_allgather_init failed
+**mpi_neighbor_allgather_init %p %d %D %p %d %D %C %p: MPI_Neighbor_allgather_init(sendbuf=%p, sendcount=%d, sendtype=%D, recvbuf=%p, recvcount=%d, recvtype=%D, comm=%C, request=%p)
 **mpi_neighbor_allgatherv: MPI_Neighbor_allgatherv failed
 **mpi_neighbor_allgatherv %p %d %D %p %p %p %D %C: MPI_Neighbor_allgatherv(sendbuf=%p, sendcount=%d, sendtype=%D, recvbuf=%p, recvcounts=%p, displs=%p, recvtype=%D, comm=%C)
 **mpi_neighbor_alltoall: MPI_Neighbor_alltoall failed
 **mpi_neighbor_alltoall %p %d %D %p %d %D %C: MPI_Neighbor_alltoall(sendbuf=%p, sendcount=%d, sendtype=%D, recvbuf=%p, recvcount=%d, recvtype=%D, comm=%C)
 **mpi_neighbor_alltoallv: MPI_Neighbor_alltoallv failed
 **mpi_neighbor_alltoallv %p %p %p %D %p %p %p %D %C: MPI_Neighbor_alltoallv(sendbuf=%p, sendcounts=%p, sdispls=%p, sendtype=%D, recvbuf=%p, recvcounts=%p, rdispls=%p, recvtype=%D, comm=%C)
+**mpi_neighbor_alltoallv_init: MPI_Neighbor_alltoallv failed
+**mpi_neighbor_alltoallv_init %p %p %p %D %p %p %p %D %C %p: MPI_Neighbor_alltoallv(sendbuf=%p, sendcounts=%p, sdispls=%p, sendtype=%D, recvbuf=%p, recvcounts=%p, rdispls=%p, recvtype=%D, comm=%C, request=%p)
 **mpi_neighbor_alltoallw: MPI_Neighbor_alltoallw failed
 **mpi_neighbor_alltoallw %p %p %p %p %p %p %p %p %C: MPI_Neighbor_alltoallw(sendbuf=%p, sendcounts=%p, sdispls=%p, sendtypes=%p, recvbuf=%p, recvcounts=%p, rdispls=%p, recvtypes=%p, comm=%C)
 
