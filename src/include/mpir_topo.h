@@ -159,6 +159,13 @@ typedef struct MPII_Dist_graph_topology {
     int is_weighted;
 	//SHM
     SHM_nbh_coll_patt *shm_nbh_coll_patt;
+    MPIR_Sched_t shm_nbh_coll_sched;
+    void *sched_mem_to_free[SCHED_MEM_TO_FREE_MAX_SIZE]; /* persistent intermediate buffers
+                                                            allocated while building the
+                                                            persistent schedule that should
+                                                            be freed in comm_free. Very temporary
+                                                            (and bad) solution.*/
+    int sched_mem_to_free_num_entries;
 } MPII_Dist_graph_topology;
 
 struct MPIR_Topology {

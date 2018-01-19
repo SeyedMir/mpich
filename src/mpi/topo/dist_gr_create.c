@@ -317,6 +317,10 @@ int MPI_Dist_graph_create(MPI_Comm comm_old, int n, const int sources[],
     dist_graph_ptr->is_weighted = (weights != MPI_UNWEIGHTED);
 	//SHM
     dist_graph_ptr->shm_nbh_coll_patt = NULL;
+    dist_graph_ptr->shm_nbh_coll_sched = NULL;
+    dist_graph_ptr->sched_mem_to_free_num_entries = 0;
+    for(i = 0; i <  SCHED_MEM_TO_FREE_MAX_SIZE; i++)
+        dist_graph_ptr->sched_mem_to_free[i] = NULL;
 
     /* can't use CHKPMEM macros for this b/c we need to realloc */
     in_capacity = 10;   /* arbitrary */
