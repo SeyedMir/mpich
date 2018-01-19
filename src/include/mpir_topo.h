@@ -5,6 +5,116 @@
  *
  */
 
+/************* SHM BEGIN *************/
+//SHM
+#ifdef DEFINE_GLOBALS
+#define EXTERN
+#else
+#define EXTERN extern
+#endif
+EXTERN int nbr_impl;
+EXTERN int nbr_frndshp_thr;
+#define INFO(stmt)
+#define INFO2(stmt)
+/* #define SHM_DEBUG */
+/* #define SHM_SCHED_DEBUG */
+#ifdef SHM_SCHED_DEBUG
+#define MAX_DEBUG_SCHED_REQS 500
+#endif
+#define MAX_COMB_DEGREE 50 /* Fix this later by finding the value for combining degree at runtime */
+#define MAX_LOOP_COUNT 50
+#define SCHED_MEM_TO_FREE_MAX_SIZE 3*MAX_COMB_DEGREE+1 /* +1 for incom_tmp_buf,
+                                                          one t for make_all_combined,
+                                                          one t for send_own_data,
+                                                          one t for get_friend_data */
+#define COMB_LIST_START_IDX 3
+
+typedef struct Scheduling_msg {
+    int is_off;
+    int *comb_list;
+    int comb_list_size;
+    int t;
+}Scheduling_msg;
+
+typedef struct Common_neighbor{
+    int rank;
+    int index;
+}Common_neighbor;
+
+typedef struct Sorted_cmn_nbrs {
+    /* an array of this struct (one per t) plus
+     * some other struct (for ordinary neighbors)
+     * is all we need to save for building the
+     * schedule later on. We need to clean things up!
+     */
+    Common_neighbor *cmn_nbrs;
+    int num_cmn_nbrs;
+    int offload_start;
+    int offload_end;
+    int onload_start;
+    int onload_end;
+}Sorted_cmn_nbrs;
+
+typedef enum Operation {
+    SEND, /* offloaded */
+    RECV, /* onloaded */
+    IDLE
+}Operation;
+
+typedef struct Comb_element {
+    int paired_frnd;
+    Operation opt;
+}Comb_element;
+
+typedef struct Common_nbrhood_matrix {
+    int **matrix;
+    int **outnbrs_innbrs_bitmap; /* Not currently an actual bitmap */
+    int *row_sizes; /* indegree of each outgoing neighbor */
+    int *ignore_row; /* Determines whether the neighbor is considered in
+                        the process of finding friends. */
+    int *is_row_offloaded; /* Determines whether a neighbor should be
+                              communicated with at the end. I.e., whether
+                              it has been offloaded or not. */
+    int *my_innbrs_bitmap; /* Not currently an actual bitmap */
+    int indegree;
+    int num_rows; /* outdegree */
+    int num_elements; /* sum of all row_sizes */
+    int t;
+    int num_onloaded[MAX_COMB_DEGREE];
+    int num_offloaded[MAX_COMB_DEGREE];
+    Sorted_cmn_nbrs sorted_cmn_nbrs[MAX_COMB_DEGREE];
+    Comb_element **comb_matrix; /* For each outgoing neighbor represents the
+                                   list of ranks with which this rank should
+                                   combine message before sending it out. */
+    int *comb_matrix_num_entries_in_row;
+}Common_nbrhood_matrix;
+
+typedef struct SHM_nbh_coll_patt {
+    Common_nbrhood_matrix *cmn_nbh_mat;
+    int **incom_sched_mat;
+
+}SHM_nbh_coll_patt;
+
+Common_neighbor* find_cmn_nbrs(Common_nbrhood_matrix *cmn_nbh_mat, int paired_frnd, int num_cmn_nbrs, int *dests);
+int add_frnd_to_comb_matrix(Common_nbrhood_matrix *cmn_nbh_mat, int row_idx, int frnd, Operation opt);
+int MPIR_Get_inNbrs_of_outNbrs(MPIR_Comm *comm_ptr, Common_nbrhood_matrix **cmn_nbh_mat_ptr);
+int find_willing_to_pair_idx(int *frnds_pot_peers, int num_frnds, int self_rank, int start_idx);
+int mask_frnd_in_nbh_matrix(Common_nbrhood_matrix *cmn_nbh_mat, int friend);
+int MPIR_Update_common_nbrhood_mat(Common_nbrhood_matrix* cmn_nbh_mat, MPIR_Comm *comm_ptr, int num_frnds);
+int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr);
+int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat, int *num_cmn_nbrs, int *num_frnds_ptr);
+int free_nbh_mat(Common_nbrhood_matrix *cmn_nbh_mat);
+int compare_cmn_nbr(const void * a, const void * b);
+int print_nbh_mat(int rank, Common_nbrhood_matrix *cmn_nbh_mat, int width, char *name);
+MPI_Aint find_incom_tmp_buf_size(int **incom_sched_mat, int num_rows, MPI_Aint size_per_rank);
+MPI_Aint find_incom_tmp_buf_offset(int **incom_sched_mat, int nbr_index, MPI_Aint size_per_rank);
+int find_in_arr(const int *array, int size, int value);
+int find_array_sum(const int *array, int size);
+int print_in_file(int rank, char *name);
+int print_vect(int rank, int size, const int *vec, char *name);
+int print_mat(int rank, int rows, int *cols, int **mat, int width, char *name);
+/************* SHM END *************/
+
 #ifndef MPIR_TOPO_H_INCLUDED
 #define MPIR_TOPO_H_INCLUDED
 
