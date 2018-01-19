@@ -32,6 +32,17 @@ int MPI_Comm_free(MPI_Comm *comm) __attribute__((weak,alias("PMPI_Comm_free")));
 #define FCNAME MPL_QUOTE(FUNCNAME)
 int MPIR_Comm_free_impl(MPIR_Comm * comm_ptr)
 {
+	//SHM
+	MPIR_Topology *topo_ptr = NULL;
+	topo_ptr = MPIR_Topology_get(comm_ptr);
+	if(topo_ptr && topo_ptr->kind == MPI_DIST_GRAPH)
+	{
+		if(topo_ptr->topo.dist_graph.shm_nbh_coll_sched)
+			MPIDU_Sched_free(topo_ptr->topo.dist_graph.shm_nbh_coll_sched);
+		while(topo_ptr->topo.dist_graph.sched_mem_to_free_num_entries > 0)
+			MPL_free(topo_ptr->topo.dist_graph.sched_mem_to_free[--(topo_ptr->topo.dist_graph.sched_mem_to_free_num_entries)]);
+	}
+
     return MPIR_Comm_release(comm_ptr);
 }
 #endif

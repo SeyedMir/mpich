@@ -1372,6 +1372,11 @@ int MPI_Dist_graph_create_adjacent(MPI_Comm comm_old,
     dist_graph_ptr->is_weighted = (sourceweights != MPI_UNWEIGHTED);
 	//SHM added
     dist_graph_ptr->shm_nbh_coll_patt = NULL;
+    dist_graph_ptr->shm_nbh_coll_sched = NULL;
+    dist_graph_ptr->sched_mem_to_free_num_entries = 0;
+    int i;
+    for(i = 0; i <  SCHED_MEM_TO_FREE_MAX_SIZE; i++)
+        dist_graph_ptr->sched_mem_to_free[i] = NULL;
 
     MPIR_CHKPMEM_MALLOC(dist_graph_ptr->in, int *, indegree*sizeof(int), mpi_errno, "dist_graph_ptr->in");
     MPIR_CHKPMEM_MALLOC(dist_graph_ptr->out, int *, outdegree*sizeof(int), mpi_errno, "dist_graph_ptr->out");
