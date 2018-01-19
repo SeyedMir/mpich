@@ -160,6 +160,8 @@ int MPI_Dist_graph_create_adjacent(MPI_Comm comm_old,
     dist_graph_ptr->out = NULL;
     dist_graph_ptr->out_weights = NULL;
     dist_graph_ptr->is_weighted = (sourceweights != MPI_UNWEIGHTED);
+	//SHM added
+    dist_graph_ptr->shm_nbh_coll_patt = NULL;
 
     MPIR_CHKPMEM_MALLOC(dist_graph_ptr->in, int *, indegree*sizeof(int), mpi_errno, "dist_graph_ptr->in");
     MPIR_CHKPMEM_MALLOC(dist_graph_ptr->out, int *, outdegree*sizeof(int), mpi_errno, "dist_graph_ptr->out");

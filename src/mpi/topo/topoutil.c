@@ -235,6 +235,25 @@ static int MPIR_Topology_delete_fn ( MPI_Comm comm ATTRIBUTE((unused)),
             MPL_free(topology->topo.dist_graph.in_weights);
         if (topology->topo.dist_graph.out_weights)
             MPL_free(topology->topo.dist_graph.out_weights);
+        //SHM
+		if(topology->topo.dist_graph.shm_nbh_coll_patt)
+		{
+			if(topology->topo.dist_graph.shm_nbh_coll_patt->cmn_nbh_mat)
+			{
+				free_nbh_mat(topology->topo.dist_graph.shm_nbh_coll_patt->cmn_nbh_mat);
+			}
+			if(topology->topo.dist_graph.shm_nbh_coll_patt->incom_sched_mat)
+			{
+				int i;
+				for(i = 0; i < topology->topo.dist_graph.indegree; i++)
+				{
+					MPL_free(topology->topo.dist_graph.shm_nbh_coll_patt->incom_sched_mat[i]);
+				}
+				MPL_free(topology->topo.dist_graph.shm_nbh_coll_patt->incom_sched_mat);
+			}
+			MPL_free(topology->topo.dist_graph.shm_nbh_coll_patt);
+		}
+
         MPL_free(topology );
     }
     /* --BEGIN ERROR HANDLING-- */

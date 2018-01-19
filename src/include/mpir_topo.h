@@ -161,6 +161,8 @@ typedef struct MPII_Dist_graph_topology {
     int *out;
     int *out_weights;
     int is_weighted;
+	//SHM
+    SHM_nbh_coll_patt *shm_nbh_coll_patt;
 } MPII_Dist_graph_topology;
 
 struct MPIR_Topology {
