@@ -140,7 +140,7 @@ int MPIR_Ineighbor_allgather_sched_impl(const void *sendbuf, int sendcount, MPI_
                 break;
             case MPIR_INEIGHBOR_ALLGATHER_INTRA_ALGO_SHM:
                 mpi_errno =
-                    MPIR_Ineighbor_allgather_sched_intra_SHM(sendbuf, sendcount, sendtype,
+                    MPIR_Ineighbor_allgather_sched_intra_shm(sendbuf, sendcount, sendtype,
                                                              recvbuf, recvcount, recvtype,
                                                              comm_ptr, s, 0);
                 break;

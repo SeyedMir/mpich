@@ -147,7 +147,7 @@ int MPIR_Ineighbor_alltoallv_sched_impl(const void *sendbuf, const int sendcount
                 break;
             case MPIR_INEIGHBOR_ALLTOALLV_INTRA_ALGO_SHM:
                 mpi_errno =
-                    MPIR_Ineighbor_alltoallv_sched_intra_SHM(sendbuf, sendcounts, sdispls,
+                    MPIR_Ineighbor_alltoallv_sched_intra_shm(sendbuf, sendcounts, sdispls,
                                                              sendtype, recvbuf, recvcounts,
                                                              rdispls, recvtype, comm_ptr, s, 0);
                 break;
