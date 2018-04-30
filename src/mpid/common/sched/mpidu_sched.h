@@ -113,7 +113,6 @@ struct MPIDU_Sched {
     int tag;
     struct MPIR_Request *req;   /* really needed? could cause MT problems... */
     struct MPIDU_Sched_entry *entries;
-    //SHM
     int is_persistent;
 
     struct MPIDU_Sched *next;   /* linked-list next pointer */
@@ -139,7 +138,6 @@ int MPIR_Sched_reduce(const void *inbuf, void *inoutbuf, MPI_Aint count, MPI_Dat
 int MPIDU_Sched_copy(const void *inbuf, MPI_Aint incount, MPI_Datatype intype, void *outbuf,
                      MPI_Aint outcount, MPI_Datatype outtype, MPIR_Sched_t s);
 int MPIDU_Sched_barrier(MPIR_Sched_t s);
-//SHM
 int MPIDU_Sched_free(struct MPIDU_Sched *s);
 int MPIDU_Sched_make_persistent(MPIR_Sched_t *sp);
 

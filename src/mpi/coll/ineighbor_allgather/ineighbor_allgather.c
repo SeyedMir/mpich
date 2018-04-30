@@ -138,11 +138,11 @@ int MPIR_Ineighbor_allgather_sched_impl(const void *sendbuf, int sendcount, MPI_
                                                                   recvbuf, recvcount, recvtype,
                                                                   comm_ptr, s);
                 break;
-            case MPIR_INEIGHBOR_ALLGATHER_INTRA_ALGO_SHM:
+            case MPIR_INEIGHBOR_ALLGATHER_INTRA_ALGO_COMB:
                 mpi_errno =
-                    MPIR_Ineighbor_allgather_sched_intra_shm(sendbuf, sendcount, sendtype,
-                                                             recvbuf, recvcount, recvtype,
-                                                             comm_ptr, s, 0);
+                    MPIR_Ineighbor_allgather_sched_intra_comb(sendbuf, sendcount, sendtype,
+                                                              recvbuf, recvcount, recvtype,
+                                                              comm_ptr, s, 0);
                 break;
             case MPIR_INEIGHBOR_ALLGATHER_INTRA_ALGO_AUTO:
                 MPL_FALLTHROUGH;

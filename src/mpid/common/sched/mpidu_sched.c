@@ -349,7 +349,6 @@ static int MPIDU_Sched_continue(struct MPIDU_Sched *s)
 
         /* _start_entry may have completed the operation, but won't update s->idx */
         if (i == s->idx && e->status >= MPIDU_SCHED_ENTRY_STATUS_COMPLETE) {
-        	//SHMSHM
 			if(s->is_persistent)
 			{
 				//Reset the entry's state for future calls.
@@ -360,7 +359,7 @@ static int MPIDU_Sched_continue(struct MPIDU_Sched *s)
 
         /* watch the indexing, s->idx might have been incremented above, so
          * ||-short-circuit matters here */
-        if(s->idx != i+1) //SHM
+        if(s->idx != i+1)
         {
 			if (e->is_barrier && (e->status < MPIDU_SCHED_ENTRY_STATUS_COMPLETE || (s->idx != i + 1))) {
 				/* we've hit a barrier but outstanding operations before this
@@ -404,7 +403,6 @@ int MPIDU_Sched_create(MPIR_Sched_t * sp)
     s->entries = NULL;
     s->next = NULL;     /* only needed for sanity checks */
     s->prev = NULL;     /* only needed for sanity checks */
-	//SHM
     s->is_persistent = 0;
 
     /* this mem will be freed by the progress engine when the request is completed */
@@ -454,7 +452,6 @@ int MPIDU_Sched_start(MPIR_Sched_t * sp, MPIR_Comm * comm, int tag, MPIR_Request
     MPIR_FUNC_VERBOSE_ENTER(MPID_STATE_MPIDU_SCHED_START);
 
     *req = NULL;
-	//SHM
     if(!s->is_persistent)
 		*sp = MPIR_SCHED_NULL;
 
@@ -986,7 +983,6 @@ static int MPIDU_Sched_progress_state(struct MPIDU_Sched_state *state, int *made
             }
 
             if (i == s->idx && e->status >= MPIDU_SCHED_ENTRY_STATUS_COMPLETE) {
-				//SHM
                 if(s->is_persistent)
                     e->status = MPIDU_SCHED_ENTRY_STATUS_NOT_STARTED; //Reset the entry's state for future calls. Don't do this any sooner.
                 ++s->idx;
@@ -1029,7 +1025,6 @@ static int MPIDU_Sched_progress_state(struct MPIDU_Sched_state *state, int *made
             }
 
             s->req = NULL;
-			//SHM
 			if(!s->is_persistent)
 			{
 				MPL_free(s->entries);

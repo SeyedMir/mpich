@@ -7,7 +7,6 @@
 
 #include "mpiimpl.h"
 
-/************* Begin SHM *************/
 /*---------------------------------------------------------------------*/
 /*     (C) Copyright 2017 Parallel Processing Research Laboratory      */
 /*                   Queen's University at Kingston                    */
@@ -15,7 +14,7 @@
 /*                    Seyed Hessamedin Mirsadeghi                      */
 /*---------------------------------------------------------------------*/
 #include <math.h>
-#include "shm_heap.h"
+#include "heap.h"
 int free_nbh_mat(Common_nbrhood_matrix *cmn_nbh_mat)
 {
     if(!cmn_nbh_mat)
@@ -219,7 +218,6 @@ int print_nbh_mat(int rank, Common_nbrhood_matrix *cmn_nbh_mat, int width, char 
     return 0;
 }
 
-//SHM
 #undef FUNCNAME
 #define FUNCNAME MPIR_Get_inNbrs_of_outNbrs
 #undef FCNAME
@@ -285,7 +283,7 @@ int MPIR_Get_inNbrs_of_outNbrs(MPIR_Comm *comm_ptr, Common_nbrhood_matrix **cmn_
 	if (mpi_errno) MPIR_ERR_POP(mpi_errno);
 	all_reqs_idx = 0; //set index back to zero for future use
 
-#ifdef SHM_DEBUG
+#ifdef DEBUG
 	print_vect(comm_ptr->rank, outdegree, outnbrs_indegree, "My outnbrs_indegree is");
 #endif
 	/** Done with getting the indegree of my outgoing neighbors **/
@@ -434,7 +432,6 @@ int mask_frnd_in_nbh_matrix(Common_nbrhood_matrix *cmn_nbh_mat, int friend)
     return 0;
 }
 
-//SHM
 #undef FUNCNAME
 #define FUNCNAME MPIR_Update_common_nbrhood_mat
 #undef FCNAME
@@ -523,12 +520,11 @@ int MPIR_Update_common_nbrhood_mat(Common_nbrhood_matrix* cmn_nbh_mat, MPIR_Comm
         goto fn_exit;
 }
 
-//SHM
 #undef FUNCNAME
-#define FUNCNAME MPIR_Build_SHM_nbh_coll_patt
+#define FUNCNAME MPIR_Build_nbh_coll_patt
 #undef FCNAME
 #define FCNAME MPL_QUOTE(FUNCNAME)
-int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
+int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
 {
 	/* This is the entry point to the algorithm that 
 	 * will build the message-combining pattern. It
@@ -574,7 +570,7 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
     int loop_count = 0;
     do
     {
-#ifdef SHM_DEBUG
+#ifdef DEBUG
         char content[256];
         sprintf(content, "---------- Main loop iteration %d ----------", loop_count);
         print_in_file(self_rank, content);
@@ -584,12 +580,12 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
 
         //MAJOR STEP: Find a friend to pair with
         int paired_frnd, num_cmn_nbrs;
-        paired_frnd = MPIR_SHM_pair_frnd(comm_ptr, cmn_nbh_mat, &num_cmn_nbrs, &num_frnds);
+        paired_frnd = MPIR_pair_frnd(comm_ptr, cmn_nbh_mat, &num_cmn_nbrs, &num_frnds);
 
         if(self_rank == 0)
             printf("Rank %d: number of friends = %d", self_rank, num_frnds);
 
-#ifdef SHM_DEBUG
+#ifdef DEBUG
         sprintf(content, "number of friends = %d", num_frnds);
         print_in_file(self_rank, content);
 #endif
@@ -713,7 +709,7 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
                 all_reqs[all_reqs_idx++] = req_ptr->handle;
             }
         }
-#ifdef SHM_DEBUG
+#ifdef DEBUG
         print_vect(self_rank, indegree, cmn_nbh_mat->my_innbrs_bitmap, "cmn_nbh_mat->my_innbrs_bitmap:");
         print_vect(self_rank, indegree, srcs, "srcs:");
 #endif
@@ -723,7 +719,7 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
         all_reqs_idx = 0; //set index back to zero for future use
 
         INFO(printf("ITR %d: Rank %d done with notifying all not-yet-ignored outgoing neighbors\n", loop_count, self_rank);fflush(stdout););
-#ifdef SHM_DEBUG
+#ifdef DEBUG
         print_vect(self_rank, indegree, cmn_nbh_mat->my_innbrs_bitmap, "UPDATED cmn_nbh_mat->my_innbrs_bitmap:");
         fflush(stdout);
         print_nbh_mat(comm_ptr->rank, cmn_nbh_mat, -3, "-----------------Current common neighborhood matrix state-----------------");
@@ -776,7 +772,7 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
         MPIR_Update_common_nbrhood_mat(cmn_nbh_mat, comm_ptr, num_frnds);//Just for matching send/recvs for those who are still num_frnds > 0.
     }while(have_atleast_one_active_in_nbr);
 
-#ifdef SHM_DEBUG
+#ifdef DEBUG
     print_nbh_mat(comm_ptr->rank, cmn_nbh_mat, -3, "-----------------Final common neighborhood matrix state-----------------");
 #endif
     /**************** Done with building the message-combining pattern ****************/
@@ -842,7 +838,7 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
         }
     }
 
-#ifdef SHM_DEBUG
+#ifdef DEBUG
     print_mat(self_rank, outdegree, sched_msg_sizes, sched_msg, -3,
             "The scheduling matrix to send out:\n"
             "Off t   Sz ");
@@ -872,7 +868,7 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
     if (mpi_errno) MPIR_ERR_POP(mpi_errno);
     all_reqs_idx = 0; //set index back to zero for future use
 
-#ifdef SHM_DEBUG
+#ifdef DEBUG
     int *sched_recv_buff_sizes; //We're using this for the print_mat matrix only
     sched_recv_buff_sizes = MPL_malloc(indegree * sizeof(int), MPL_MEM_OTHER);
     for(i = 0; i < indegree; i++)
@@ -884,11 +880,11 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
 #endif
 
     //Attaching the received sched_recv_buff and cmn_nbh_mat to the topology of the communicator
-    MPIR_CHKPMEM_MALLOC(topo_ptr->topo.dist_graph.shm_nbh_coll_patt,
-                        SHM_nbh_coll_patt*, sizeof(SHM_nbh_coll_patt), mpi_errno,
-                        "topo_ptr->topo.dist_graph.shm_nbh_coll_patt", MPL_MEM_OTHER);
-    topo_ptr->topo.dist_graph.shm_nbh_coll_patt->cmn_nbh_mat = cmn_nbh_mat;
-    topo_ptr->topo.dist_graph.shm_nbh_coll_patt->incom_sched_mat = sched_recv_buffs;
+    MPIR_CHKPMEM_MALLOC(topo_ptr->topo.dist_graph.nbh_coll_patt,
+                        nbh_coll_patt*, sizeof(nbh_coll_patt), mpi_errno,
+                        "topo_ptr->topo.dist_graph.nbh_coll_patt", MPL_MEM_OTHER);
+    topo_ptr->topo.dist_graph.nbh_coll_patt->cmn_nbh_mat = cmn_nbh_mat;
+    topo_ptr->topo.dist_graph.nbh_coll_patt->incom_sched_mat = sched_recv_buffs;
 
     MPIR_CHKPMEM_COMMIT();
 
@@ -909,12 +905,11 @@ fn_fail:
     goto fn_exit;
 }
 
-//SHM
 #undef FUNCNAME
-#define FUNCNAME MPIR_SHM_pair_frnd
+#define FUNCNAME MPIR_pair_frnd
 #undef FCNAME
 #define FCNAME MPL_QUOTE(FUNCNAME)
-int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
+int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
                        int *num_cmn_nbrs, int *num_frnds_ptr)
 {
     int mpi_errno = MPI_SUCCESS;
@@ -933,7 +928,7 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
 
     MPIR_CHKLMEM_DECL(1);
 
-#ifdef SHM_DEBUG
+#ifdef DEBUG
     print_nbh_mat(comm_ptr->rank, cmn_nbh_mat, -3, "My outnbrs_innbrs are");
 #endif
 
@@ -978,8 +973,8 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
     MPIR_Request *req_ptr = NULL;
 
     //Build the maxHeap of friends from the global friendship array
-    shm_heap *frndshp_maxHeap;
-    MPIR_CHKLMEM_MALLOC(frndshp_maxHeap, shm_heap*, sizeof(shm_heap),
+    heap *frndshp_maxHeap;
+    MPIR_CHKLMEM_MALLOC(frndshp_maxHeap, heap*, sizeof(heap),
                         mpi_errno, "frndshp_maxHeap", MPL_MEM_OTHER);
     heap_init(frndshp_maxHeap, cmn_nbh_mat->num_elements);
     for(i = 0; i < comm_size; i++)
@@ -1014,7 +1009,7 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
 		 * is only valid for the frnds_paired array because the other two arrays
 		 * have been updated by removing the paired friends from them.
 		 */
-#ifdef SHM_DEBUG
+#ifdef DEBUG
 	    char content[256];
         sprintf(content, "------Iteration %d started------", itr);
 	    print_in_file(self_rank, content);
@@ -1121,18 +1116,18 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
 		    if (mpi_errno) MPIR_ERR_POP(mpi_errno);
 		    all_reqs[all_reqs_idx++] = req_ptr->handle;
         }
-#ifdef SHM_DEBUG
+#ifdef DEBUG
 		print_vect(self_rank, num_frnds, frnds_ranks, "frnds_ranks:");
 #endif
 		mpi_errno = MPIR_Waitall(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
 		if (mpi_errno) MPIR_ERR_POP(mpi_errno);
 		all_reqs_idx = 0; //set index back to zero for future use
 
-#ifdef SHM_DEBUG
+#ifdef DEBUG
         print_vect(self_rank, num_frnds, frnds_pot_peers, "Updated frnds_pot_peers:");
 #endif
         INFO(printf("Rank %d passed the first comm round; itr = %d\n", self_rank, itr));
-#ifdef SHM_DEBUG
+#ifdef DEBUG
         sprintf(content, "MY_POT_PEER =  %d", my_pot_peer);
         print_in_file(self_rank, content);
 #endif
@@ -1167,13 +1162,13 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
         if (mpi_errno) MPIR_ERR_POP(mpi_errno);
         all_reqs_idx = 0; //set index back to zero for future use
 
-#ifdef SHM_DEBUG
+#ifdef DEBUG
         print_vect(self_rank, num_frnds, frnds_paired, "frnds_paired:");
 #endif
 
         INFO(printf("Rank %d passed the second comm round; itr = %d\n", self_rank, itr));
        
-#ifdef SHM_DEBUG
+#ifdef DEBUG
         int *vals = MPL_malloc(frndshp_maxHeap->count * sizeof(int), MPL_MEM_OTHER);
         if(!heap_get_values_array(frndshp_maxHeap, vals))
             print_vect(self_rank, frndshp_maxHeap->count, vals, "heap array values (ranks) before removing paired:");
@@ -1193,7 +1188,7 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
             }
         }
 
-#ifdef SHM_DEBUG
+#ifdef DEBUG
         vals = MPL_malloc(frndshp_maxHeap->count * sizeof(int), MPL_MEM_OTHER);
         if(!heap_get_values_array(frndshp_maxHeap, vals))
             print_vect(self_rank, frndshp_maxHeap->count, vals, "heap array values (ranks) after removing paired:");
@@ -1228,12 +1223,11 @@ fn_exit:
     MPIR_CHKLMEM_FREEALL();
     return my_pot_peer;
 fn_fail:
-    fprintf(stderr, "Rank %d failed in MPIR_SHM_pair_frnd!\n", self_rank);
+    fprintf(stderr, "Rank %d failed in MPIR_pair_frnd!\n", self_rank);
     *num_cmn_nbrs = 0;
     MPIR_CHKLMEM_FREEALL();
     return -1;
 }
-/************* End SHM *************/
 
 /* -- Begin Profiling Symbol Block for routine MPI_Dist_graph_create_adjacent */
 #if defined(HAVE_PRAGMA_WEAK)
@@ -1392,9 +1386,8 @@ int MPI_Dist_graph_create_adjacent(MPI_Comm comm_old,
     dist_graph_ptr->out = NULL;
     dist_graph_ptr->out_weights = NULL;
     dist_graph_ptr->is_weighted = (sourceweights != MPI_UNWEIGHTED);
-	//SHM added
-    dist_graph_ptr->shm_nbh_coll_patt = NULL;
-    dist_graph_ptr->shm_nbh_coll_sched = NULL;
+    dist_graph_ptr->nbh_coll_patt = NULL;
+    dist_graph_ptr->nbh_coll_sched = NULL;
     dist_graph_ptr->sched_mem_to_free_num_entries = 0;
     int i;
     for(i = 0; i <  SCHED_MEM_TO_FREE_MAX_SIZE; i++)
@@ -1423,21 +1416,20 @@ int MPI_Dist_graph_create_adjacent(MPI_Comm comm_old,
     MPIR_OBJ_PUBLISH_HANDLE(*comm_dist_graph, comm_dist_graph_ptr->handle);
     MPIR_CHKPMEM_COMMIT();
 
-	//SHM
     if(nbr_impl == 1)
     {
-        double build_SHM_nbh_coll_patt_time = -MPI_Wtime();
-        MPIR_Build_SHM_nbh_coll_patt(comm_dist_graph_ptr);
-        build_SHM_nbh_coll_patt_time += MPI_Wtime();
+        double build_nbh_coll_patt_time = -MPI_Wtime();
+        MPIR_Build_nbh_coll_patt(comm_dist_graph_ptr);
+        build_nbh_coll_patt_time += MPI_Wtime();
 
-        double max_build_SHM_nbh_coll_patt_time = 0;
+        double max_build_nbh_coll_patt_time = 0;
 		MPIR_Errflag_t errflag = MPIR_ERR_NONE;
-        MPIR_Reduce_impl(&build_SHM_nbh_coll_patt_time,
-							&max_build_SHM_nbh_coll_patt_time,
+        MPIR_Reduce_impl(&build_nbh_coll_patt_time,
+							&max_build_nbh_coll_patt_time,
                             1, MPI_DOUBLE, MPI_MAX, 0, comm_ptr,
 							&errflag);
         if(comm_ptr->rank == 0)
-            printf("\nTime to build the SHM neighborhood pattern (max): %lf (s)\n", max_build_SHM_nbh_coll_patt_time);
+            printf("\nTime to build the neighborhood pattern (max): %lf (s)\n", max_build_nbh_coll_patt_time);
     }
 
     /* ... end of body of routine ... */

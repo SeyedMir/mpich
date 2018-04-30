@@ -891,10 +891,10 @@ int MPIR_Ineighbor_allgather_sched_intra_auto(const void *sendbuf, int sendcount
                                               MPI_Datatype sendtype, void *recvbuf, int recvcount,
                                               MPI_Datatype recvtype, MPIR_Comm * comm_ptr,
                                               MPIR_Sched_t s);
-int MPIR_Ineighbor_allgather_sched_intra_SHM(const void *sendbuf, int sendcount,
-                                             MPI_Datatype sendtype, void *recvbuf, int recvcount,
-                                             MPI_Datatype recvtype, MPIR_Comm * comm_ptr,
-                                             MPIR_Sched_t s, int persistent_coll);
+int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount,
+                                              MPI_Datatype sendtype, void *recvbuf, int recvcount,
+                                              MPI_Datatype recvtype, MPIR_Comm * comm_ptr,
+                                              MPIR_Sched_t s, int persistent_coll);
 
 /* sched-based intercomm-only functions */
 int MPIR_Ineighbor_allgather_sched_inter_auto(const void *sendbuf, int sendcount,
@@ -1014,7 +1014,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_auto(const void *sendbuf, const int sen
                                               void *recvbuf, const int recvcounts[],
                                               const int rdispls[], MPI_Datatype recvtype,
                                               MPIR_Comm * comm_ptr, MPIR_Sched_t s);
-int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int sendcounts[],
+int MPIR_Ineighbor_alltoallv_sched_intra_comb(const void *sendbuf, const int sendcounts[],
                                               const int sdispls[], MPI_Datatype sendtype,
                                               void *recvbuf, const int recvcounts[],
                                               const int rdispls[], MPI_Datatype recvtype,

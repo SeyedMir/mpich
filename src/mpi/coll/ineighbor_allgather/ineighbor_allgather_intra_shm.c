@@ -50,19 +50,19 @@ MPI_Aint find_incom_tmp_buf_offset(int **incom_sched_mat, int nbr_index, MPI_Ain
  */
 
 #undef FUNCNAME
-#define FUNCNAME MPIR_Ineighbor_allgather_sched_intra_shm
+#define FUNCNAME MPIR_Ineighbor_allgather_sched_intra_comb
 #undef FCNAME
 #define FCNAME MPL_QUOTE(FUNCNAME)
-int MPIR_Ineighbor_allgather_sched_intra_shm(const void *sendbuf, int sendcount,
-                                             MPI_Datatype sendtype, void *recvbuf,
-                                             int recvcount, MPI_Datatype recvtype,
-                                             MPIR_Comm * comm_ptr, MPIR_Sched_t s,
-                                             int persistent_coll)
+int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount,
+                                              MPI_Datatype sendtype, void *recvbuf,
+                                              int recvcount, MPI_Datatype recvtype,
+                                              MPIR_Comm * comm_ptr, MPIR_Sched_t s,
+                                              int persistent_coll)
 {
     /* At this point, we already have extracted all information
      * needed for building the schedule. The information is
      * attached to the topo.dist_graph field of the communicator
-     * as a SHM_nbr_coll_patt structure. Now, we have to build
+     * as an nbr_coll_patt structure. Now, we have to build
      * the schedule out of the information provided by this struct.
      */
     /* TODO: Update this implementation based on the new one used for alltoallv. */
@@ -89,8 +89,8 @@ int MPIR_Ineighbor_allgather_sched_intra_shm(const void *sendbuf, int sendcount,
         MPIR_ERR_POP(mpi_errno);
 
     MPIR_Topology *topo_ptr = MPIR_Topology_get(comm_ptr);
-    Common_nbrhood_matrix *cmn_nbh_mat = topo_ptr->topo.dist_graph.shm_nbh_coll_patt->cmn_nbh_mat;
-    int **incom_sched_mat = topo_ptr->topo.dist_graph.shm_nbh_coll_patt->incom_sched_mat;
+    Common_nbrhood_matrix *cmn_nbh_mat = topo_ptr->topo.dist_graph.nbh_coll_patt->cmn_nbh_mat;
+    int **incom_sched_mat = topo_ptr->topo.dist_graph.nbh_coll_patt->incom_sched_mat;
 
     MPI_Aint recvtype_extent, recvtype_true_extent,
              recvtype_max_extent, recvtype_true_lb;
@@ -301,7 +301,7 @@ int MPIR_Ineighbor_allgather_sched_intra_shm(const void *sendbuf, int sendcount,
         MPIR_Reduce_impl(&sched_time, &max_sched_time, 1, MPI_DOUBLE, MPI_MAX, 0, comm_ptr, &errflag);
         if(comm_ptr->rank == 0)
         {
-            printf("Time to build the SHM neighborhood schedule (max): %lf (s)\n", max_sched_time);
+            printf("Time to build the neighborhood schedule (max): %lf (s)\n", max_sched_time);
             fflush(stdout);
         }
     }

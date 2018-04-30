@@ -227,7 +227,6 @@ typedef struct MPIR_Topology MPIR_Topology;
 #include "mpir_misc_post.h"
 #include "mpit.h"
 #include "mpir_handlemem.h"
-//SHM
 #include "mpir_topo.h"
 
 /*****************************************************************************/

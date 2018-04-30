@@ -4,11 +4,10 @@
 /*                Neighborhood Collective Communication                */
 /*                    Seyed Hessamedin Mirsadeghi                      */
 /*---------------------------------------------------------------------*/
-//SHM
 #include <stdio.h>
 #include <stdlib.h>
 #include "mpiimpl.h"
-#include "shm_heap.h"
+#include "heap.h"
 
 //We use 1-indexed array for heap implementation.
 //Element at index 0 is just undefined/ignored.
@@ -19,7 +18,7 @@
 
 #define INFO(stmt)
 
-int heap_init(shm_heap *h, int arr_size)
+int heap_init(heap *h, int arr_size)
 {
 	if(h == NULL)
 	{
@@ -34,7 +33,7 @@ int heap_init(shm_heap *h, int arr_size)
 	return 0;
 }
 
-int heap_free_array(shm_heap *h)
+int heap_free_array(heap *h)
 {
     if(h == NULL)
     {
@@ -52,7 +51,7 @@ int heap_free_array(shm_heap *h)
     return 0;
 }
 
-int heap_is_empty(shm_heap *h)
+int heap_is_empty(heap *h)
 {
     if(h == NULL)
     {
@@ -65,7 +64,7 @@ int heap_is_empty(shm_heap *h)
         return 0;
 }
 
-int heap_insert(shm_heap *h,  heap_element *e)
+int heap_insert(heap *h,  heap_element *e)
 {
 	if(h == NULL)
 	{
@@ -100,7 +99,7 @@ int heap_insert(shm_heap *h,  heap_element *e)
 	return 0;
 }
 
-int heap_remove_max(shm_heap *h)
+int heap_remove_max(heap *h)
 {
 	if(h == NULL)
 	{
@@ -142,7 +141,7 @@ int heap_remove_max(shm_heap *h)
 	return 0;
 }
 
-int heap_remove_index(shm_heap *h, int index)
+int heap_remove_index(heap *h, int index)
 {
     if(h == NULL)
     {
@@ -210,7 +209,7 @@ int heap_remove_index(shm_heap *h, int index)
     return 0;
 }
 
-int heap_find_value(shm_heap *h, int value)
+int heap_find_value(heap *h, int value)
 {
     int i;
     for(i = 1; i <= h->count; i++)
@@ -221,7 +220,7 @@ int heap_find_value(shm_heap *h, int value)
     return -1;
 }
 
-int heap_get_keys_array(shm_heap *h, int *keys)
+int heap_get_keys_array(heap *h, int *keys)
 {
     if(h == NULL)
     {
@@ -242,7 +241,7 @@ int heap_get_keys_array(shm_heap *h, int *keys)
     return 0;
 }
 
-int heap_get_values_array(shm_heap *h, int *values)
+int heap_get_values_array(heap *h, int *values)
 {
     if(h == NULL)
     {
@@ -263,7 +262,7 @@ int heap_get_values_array(shm_heap *h, int *values)
     return 0;
 }
 
-int heap_peek_max_key(shm_heap *h)
+int heap_peek_max_key(heap *h)
 {
 	if(h == NULL)
 	{
@@ -279,7 +278,7 @@ int heap_peek_max_key(shm_heap *h)
 	return h->heap_arr[1]->key;
 }
 
-int heap_peek_max_value(shm_heap *h)
+int heap_peek_max_value(heap *h)
 {
 	if(h == NULL)
 	{
@@ -295,7 +294,7 @@ int heap_peek_max_value(shm_heap *h)
 	return h->heap_arr[1]->value;
 }
 
-int heap_peek_max_paired(shm_heap *h)
+int heap_peek_max_paired(heap *h)
 {
     if(h == NULL)
     {
@@ -311,7 +310,7 @@ int heap_peek_max_paired(shm_heap *h)
     return h->heap_arr[1]->paired;
 }
 
-int heap_peek_key_at_index(shm_heap *h, int index)
+int heap_peek_key_at_index(heap *h, int index)
 {
     if(h == NULL)
     {
@@ -332,7 +331,7 @@ int heap_peek_key_at_index(shm_heap *h, int index)
     return h->heap_arr[index]->key;
 }
 
-int heap_peek_value_at_index(shm_heap *h, int index)
+int heap_peek_value_at_index(heap *h, int index)
 {
     if(h == NULL)
     {

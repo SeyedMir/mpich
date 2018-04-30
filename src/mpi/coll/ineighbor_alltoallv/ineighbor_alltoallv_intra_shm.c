@@ -13,7 +13,7 @@
 
 #include "mpiimpl.h"
 
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
 /***** FOR DEBUGGING ONLY *****/
 int debug_glob_all_reqs_idx = 0;
 MPI_Request debug_glob_all_reqs[MAX_DEBUG_SCHED_REQS];
@@ -30,7 +30,7 @@ int a2aV_make_all_combined_msgs(int t, int persistent_coll, void *exchange_recvb
                                 MPI_Aint sendtype_max_extent, Common_nbrhood_matrix *cmn_nbh_mat,
                                 MPIR_Comm *comm_ptr, MPIR_Sched_t s, void **combined_sendbuf_ptr)
 {
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
     char content[256];
 #endif
     MPIR_CHKPMEM_DECL(1);
@@ -51,7 +51,7 @@ int a2aV_make_all_combined_msgs(int t, int persistent_coll, void *exchange_recvb
         combined_sendbuf_count += sendcounts[dest_idx] + friend_off_counts[fc_idx];
         fc_idx++;
     }
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
     sprintf(content, 
             "combined_send_count = %d (for all onloaded at t = %d)\n", combined_sendbuf_count, t);
     print_in_file(comm_ptr->rank, content);
@@ -73,7 +73,7 @@ int a2aV_make_all_combined_msgs(int t, int persistent_coll, void *exchange_recvb
                                   mpi_errno, "combined_sendbuf", MPL_MEM_OTHER);
     }
     *(char**)combined_sendbuf_ptr = combined_sendbuf; /* to return to the caller */
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
     /***** FOR DEBUGGING ONLY *****/
     print_vect(comm_ptr->rank, find_array_sum(friend_off_counts, num_onloaded),
                exchange_recvbuf, "exchange_recvbuf in make_all_combined: ");
@@ -89,7 +89,7 @@ int a2aV_make_all_combined_msgs(int t, int persistent_coll, void *exchange_recvb
         copy_from = ((char*)sendbuf) + sdispls[dest_idx] * sendtype_extent;
         MPIR_Sched_copy(copy_from, sendcounts[dest_idx], sendtype,
                         copy_to, sendcounts[dest_idx], sendtype, s);
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
         /***** FOR DEBUGGING ONLY *****/
         MPIR_Localcopy(copy_from, sendcounts[dest_idx], sendtype,
                        copy_to, sendcounts[dest_idx], sendtype);
@@ -99,7 +99,7 @@ int a2aV_make_all_combined_msgs(int t, int persistent_coll, void *exchange_recvb
         copy_from = ((char*)exchange_recvbuf) + f_displ * sendtype_extent;
         MPIR_Sched_copy(copy_from, friend_off_counts[fc_idx], sendtype,
                         copy_to, friend_off_counts[fc_idx], sendtype, s);
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
         /***** FOR DEBUGGING ONLY *****/
         MPIR_Localcopy(copy_from, friend_off_counts[fc_idx], sendtype,
                         copy_to, friend_off_counts[fc_idx], sendtype);
@@ -110,7 +110,7 @@ int a2aV_make_all_combined_msgs(int t, int persistent_coll, void *exchange_recvb
         fc_idx++;
         /**** End of packing ****/
     }
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
     /***** FOR DEBUGGING ONLY *****/
     print_vect(comm_ptr->rank, combined_sendbuf_count,
                (int*)combined_sendbuf, "combined_sendbuf in make_all_combined: ");
@@ -167,7 +167,7 @@ int a2aV_send_to_onloaded_nbrs(int t, void *combined_sendbuf, int *friend_off_co
         mpi_errno = MPIR_Sched_send(send_from, combined_sendcount,
                                     sendtype, dests[dest_idx], comm_ptr, s);
         if (mpi_errno) MPIR_ERR_POP(mpi_errno);
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
         /***** FOR DEBUGGING ONLY *****/
         int context_offset = (comm_ptr->comm_kind == MPIR_COMM_KIND__INTRACOMM) ?
                                   MPIR_CONTEXT_INTRA_COLL : MPIR_CONTEXT_INTER_COLL;
@@ -344,7 +344,7 @@ int a2aV_exchange_data_with_friend(int t, int persistent_coll, const void *sendb
         MPIR_Sched_copy(copy_from, sendcounts[dest_idx], sendtype,
                         copy_to, sendcounts[dest_idx], sendtype, s);
         if(mpi_errno) MPIR_ERR_POP(mpi_errno);
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
         /***** FOR DEBUGGING ONLY *****/
         MPIR_Localcopy(copy_from, sendcounts[dest_idx], sendtype,
                        copy_to, sendcounts[dest_idx], sendtype);
@@ -353,7 +353,7 @@ int a2aV_exchange_data_with_friend(int t, int persistent_coll, const void *sendb
     }
 
     MPIR_SCHED_BARRIER(s);
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
     /***** FOR DEBUGGING ONLY *****/
     int all_reqs_idx = 0;
     MPI_Request all_reqs[2];
@@ -434,15 +434,15 @@ int a2aV_find_incom_recv_count(int *incom_sched_vec, int *srcs, const int *recvc
  */
 
 #undef FUNCNAME
-#define FUNCNAME MPIR_Ineighbor_alltoallv_sched_intra_shm
+#define FUNCNAME MPIR_Ineighbor_alltoallv_sched_intra_comb
 #undef FCNAME
 #define FCNAME MPL_QUOTE(FUNCNAME)
-int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int sendcounts[],
-                                             const int sdispls[], MPI_Datatype sendtype,
-                                             void *recvbuf, const int recvcounts[],
-                                             const int rdispls[], MPI_Datatype recvtype,
-                                             MPIR_Comm * comm_ptr, MPIR_Sched_t s,
-                                             int persistent_coll)
+int MPIR_Ineighbor_alltoallv_sched_intra_comb(const void *sendbuf, const int sendcounts[],
+                                              const int sdispls[], MPI_Datatype sendtype,
+                                              void *recvbuf, const int recvcounts[],
+                                              const int rdispls[], MPI_Datatype recvtype,
+                                              MPIR_Comm * comm_ptr, MPIR_Sched_t s,
+                                              int persistent_coll)
 {
     double sched_time = -MPI_Wtime();
 
@@ -475,13 +475,13 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
     if (mpi_errno)
         MPIR_ERR_POP(mpi_errno);
 
-#ifdef SHM_DEBUG
+#ifdef DEBUG
     char content[256]; /* for in-file prints */
 #endif
 
     MPIR_Topology *topo_ptr = MPIR_Topology_get(comm_ptr);
-    Common_nbrhood_matrix *cmn_nbh_mat = topo_ptr->topo.dist_graph.shm_nbh_coll_patt->cmn_nbh_mat;
-    int **incom_sched_mat = topo_ptr->topo.dist_graph.shm_nbh_coll_patt->incom_sched_mat;
+    Common_nbrhood_matrix *cmn_nbh_mat = topo_ptr->topo.dist_graph.nbh_coll_patt->cmn_nbh_mat;
+    int **incom_sched_mat = topo_ptr->topo.dist_graph.nbh_coll_patt->incom_sched_mat;
 
     MPI_Aint recvtype_extent, recvtype_true_extent,
              recvtype_max_extent, recvtype_true_lb;
@@ -560,7 +560,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
             if (mpi_errno) MPIR_ERR_POP(mpi_errno);
             all_reqs_idx = 0; /* set index back to zero for future use */
 
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
             print_vect(comm_ptr->rank,
                        cmn_nbh_mat->num_onloaded[t], friend_off_counts, "friend_off_counts: ");
             print_vect(comm_ptr->rank,
@@ -619,7 +619,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
                                                 incom_sched_mat[i][COMB_LIST_START_IDX],
                                                 comm_ptr, s);
                     if (mpi_errno) MPIR_ERR_POP(mpi_errno);
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
                     /***** FOR DEBUGGING ONLY *****/
                     MPIR_Request *req_ptr = NULL;
                     int context_offset = (comm_ptr->comm_kind == MPIR_COMM_KIND__INTRACOMM) ?
@@ -641,7 +641,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
 
         MPIR_SCHED_BARRIER(s);
 
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
         /***** FOR DEBUGGING ONLY *****/
         mpi_errno = MPIR_Waitall(debug_glob_all_reqs_idx,
                                       debug_glob_all_reqs, MPI_STATUS_IGNORE);
@@ -662,7 +662,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
                     {
                         int nbr_idx = find_in_arr(srcs, indegree,
                                                   incom_sched_mat[i][j + COMB_LIST_START_IDX]);
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
                         sprintf(content, "t = %d, incom_nbr = %d, nbr_idx = %d, "\
                                 "recvcounts[nbr_idx] = %d, rdispls[nbr_idx] = %d\n",
                                 t, incom_sched_mat[i][j + COMB_LIST_START_IDX], nbr_idx,
@@ -672,7 +672,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
                         copy_to = ((char*)recvbuf) + rdispls[nbr_idx] * recvtype_extent;
                         MPIR_Sched_copy(copy_from, recvcounts[nbr_idx], recvtype,
                                         copy_to, recvcounts[nbr_idx], recvtype, s);
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
                         /***** FOR DEBUGGING ONLY *****/
                         MPIR_Localcopy(copy_from, recvcounts[nbr_idx], recvtype,
                                        copy_to, recvcounts[nbr_idx], recvtype);
@@ -686,7 +686,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
         MPIR_SCHED_BARRIER(s);
     }
 
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
     /***** FOR DEBUGGING ONLY *****/
     print_vect(comm_ptr->rank, indegree, (int*)recvbuf, "recvbuf before residual send/recvs: ");
 #endif
@@ -700,7 +700,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
             mpi_errno = MPIR_Sched_send(((char*)sendbuf) + sdispls[i] * sendtype_extent,
                                         sendcounts[i], sendtype, dsts[i], comm_ptr, s);
             if (mpi_errno) MPIR_ERR_POP(mpi_errno);
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
             /***** FOR DEBUGGING ONLY *****/
             int context_offset = (comm_ptr->comm_kind == MPIR_COMM_KIND__INTRACOMM) ?
                                       MPIR_CONTEXT_INTRA_COLL : MPIR_CONTEXT_INTER_COLL;
@@ -732,7 +732,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
             mpi_errno = MPIR_Sched_recv(rb, incom_recv_count, recvtype,
                                         incom_sched_mat[i][COMB_LIST_START_IDX], comm_ptr, s);
             if (mpi_errno) MPIR_ERR_POP(mpi_errno);
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
             /***** FOR DEBUGGING ONLY *****/
             MPIR_Request *req_ptr = NULL;
             int context_offset = (comm_ptr->comm_kind == MPIR_COMM_KIND__INTRACOMM) ?
@@ -753,7 +753,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
 
     MPIR_SCHED_BARRIER(s);
 
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
     /***** FOR DEBUGGING ONLY *****/
     mpi_errno = MPIR_Waitall(debug_glob_all_reqs_idx, debug_glob_all_reqs, MPI_STATUS_IGNORE);
     if (mpi_errno) MPIR_ERR_POP(mpi_errno);
@@ -777,7 +777,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
                 copy_to = ((char*)recvbuf) + rdispls[nbr_idx] * recvtype_extent;
                 MPIR_Sched_copy(copy_from, recvcounts[nbr_idx], recvtype,
                                 copy_to, recvcounts[nbr_idx], recvtype, s);
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
                 /***** FOR DEBUGGING ONLY *****/
                 MPIR_Localcopy(copy_from, recvcounts[nbr_idx], recvtype,
                                copy_to, recvcounts[nbr_idx], recvtype);
@@ -789,7 +789,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
 
     MPIR_SCHED_BARRIER(s);
 
-#ifdef SHM_SCHED_DEBUG
+#ifdef SCHED_DEBUG
     /***** FOR DEBUGGING ONLY *****/
     print_vect(comm_ptr->rank, indegree, (int*)recvbuf, "Final recvbuf: ");
 #endif
@@ -828,7 +828,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
         }
     }
 
-#ifdef SHM_DEBUG
+#ifdef DEBUG
     sprintf(content, "Done with building the schedule.\n");
     print_in_file(comm_ptr->rank, content);
 #endif
