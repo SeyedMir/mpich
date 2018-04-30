@@ -256,12 +256,13 @@ int MPIR_Get_inNbrs_of_outNbrs(MPIR_Comm *comm_ptr, Common_nbrhood_matrix **cmn_
                       MPIR_CONTEXT_INTRA_COLL : MPIR_CONTEXT_INTER_COLL;
     reqs_max_size = indegree + outdegree;
     all_reqs_idx = 0;
-    MPI_Request *all_reqs = MPL_malloc(reqs_max_size * sizeof(MPI_Request));
+    MPI_Request *all_reqs = MPL_malloc(reqs_max_size * sizeof(MPI_Request), MPL_MEM_OBJECT);
     MPIR_Request *req_ptr = NULL;
 
     //Recv buffer
     int *outnbrs_indegree;
-    MPIR_CHKPMEM_MALLOC(outnbrs_indegree, int*, outdegree * sizeof(int), mpi_errno, "outnbrs_indegree");
+    MPIR_CHKPMEM_MALLOC(outnbrs_indegree, int*, outdegree * sizeof(int),
+                        mpi_errno, "outnbrs_indegree", MPL_MEM_OTHER);
 
 	//Send the indegree to each incoming neighbor
     for(in_idx = 0; in_idx < indegree; in_idx++) //for each of my incoming neighbors
@@ -280,7 +281,7 @@ int MPIR_Get_inNbrs_of_outNbrs(MPIR_Comm *comm_ptr, Common_nbrhood_matrix **cmn_
 		all_reqs[all_reqs_idx++] = req_ptr->handle;
 	}
 
-	mpi_errno = MPIR_Waitall_impl(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
+	mpi_errno = MPIR_Waitall(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
 	if (mpi_errno) MPIR_ERR_POP(mpi_errno);
 	all_reqs_idx = 0; //set index back to zero for future use
 
@@ -296,14 +297,22 @@ int MPIR_Get_inNbrs_of_outNbrs(MPIR_Comm *comm_ptr, Common_nbrhood_matrix **cmn_
 	 */
 	//Build recv buffers first, which will become the result matrix
 	Common_nbrhood_matrix *cmn_nbh_mat;
-	MPIR_CHKPMEM_MALLOC(cmn_nbh_mat, Common_nbrhood_matrix*, sizeof(Common_nbrhood_matrix), mpi_errno, "cmn_nbh_mat");
-	MPIR_CHKPMEM_CALLOC(cmn_nbh_mat->ignore_row, int*, outdegree * sizeof(int), mpi_errno, "cmn_nbh_mat->ignore_row");
-	MPIR_CHKPMEM_CALLOC(cmn_nbh_mat->is_row_offloaded, int*, outdegree * sizeof(int), mpi_errno, "cmn_nbh_mat->is_row_offloaded");
-	MPIR_CHKPMEM_MALLOC(cmn_nbh_mat->my_innbrs_bitmap, int*, indegree * sizeof(int), mpi_errno, "cmn_nbh_mat->my_innbrs_bitmap");
-	MPIR_CHKPMEM_MALLOC(cmn_nbh_mat->outnbrs_innbrs_bitmap, int**, outdegree * sizeof(int*), mpi_errno, "cmn_nbh_mat->outnbrs_innbrs_bitmap");
-	MPIR_CHKPMEM_MALLOC(cmn_nbh_mat->matrix, int**, outdegree * sizeof(int*), mpi_errno, "cmn_nbh_mat->matrix");
-	MPIR_CHKPMEM_MALLOC(cmn_nbh_mat->comb_matrix, Comb_element**, outdegree * sizeof(Comb_element*), mpi_errno, "cmn_nbh_mat->comb_matrix");
-	MPIR_CHKPMEM_CALLOC(cmn_nbh_mat->comb_matrix_num_entries_in_row, int*, outdegree * sizeof(int), mpi_errno, "cmn_nbh_mat->comb_matrix_num_entries_in_row");
+	MPIR_CHKPMEM_MALLOC(cmn_nbh_mat, Common_nbrhood_matrix*, sizeof(Common_nbrhood_matrix),
+                        mpi_errno, "cmn_nbh_mat", MPL_MEM_OTHER);
+	MPIR_CHKPMEM_CALLOC(cmn_nbh_mat->ignore_row, int*, outdegree * sizeof(int),
+                        mpi_errno, "cmn_nbh_mat->ignore_row", MPL_MEM_OTHER);
+	MPIR_CHKPMEM_CALLOC(cmn_nbh_mat->is_row_offloaded, int*, outdegree * sizeof(int),
+                        mpi_errno, "cmn_nbh_mat->is_row_offloaded", MPL_MEM_OTHER);
+	MPIR_CHKPMEM_MALLOC(cmn_nbh_mat->my_innbrs_bitmap, int*, indegree * sizeof(int),
+                        mpi_errno, "cmn_nbh_mat->my_innbrs_bitmap", MPL_MEM_OTHER);
+	MPIR_CHKPMEM_MALLOC(cmn_nbh_mat->outnbrs_innbrs_bitmap, int**, outdegree * sizeof(int*),
+                        mpi_errno, "cmn_nbh_mat->outnbrs_innbrs_bitmap", MPL_MEM_OTHER);
+	MPIR_CHKPMEM_MALLOC(cmn_nbh_mat->matrix, int**, outdegree * sizeof(int*),
+                        mpi_errno, "cmn_nbh_mat->matrix", MPL_MEM_OTHER);
+	MPIR_CHKPMEM_MALLOC(cmn_nbh_mat->comb_matrix, Comb_element**, outdegree * sizeof(Comb_element*),
+                        mpi_errno, "cmn_nbh_mat->comb_matrix", MPL_MEM_OTHER);
+	MPIR_CHKPMEM_CALLOC(cmn_nbh_mat->comb_matrix_num_entries_in_row, int*, outdegree * sizeof(int),
+                        mpi_errno, "cmn_nbh_mat->comb_matrix_num_entries_in_row", MPL_MEM_OTHER);
 	cmn_nbh_mat->num_rows = outdegree;
     cmn_nbh_mat->indegree = indegree;
     cmn_nbh_mat->num_elements = 0; //figure out later
@@ -321,19 +330,19 @@ int MPIR_Get_inNbrs_of_outNbrs(MPIR_Comm *comm_ptr, Common_nbrhood_matrix **cmn_
 	}
 	for(out_idx = 0; out_idx < outdegree; out_idx++) //for each of my outgoing neighbors
 	{
-		cmn_nbh_mat->comb_matrix[out_idx] = MPL_malloc(MAX_COMB_DEGREE * sizeof(Comb_element));
+		cmn_nbh_mat->comb_matrix[out_idx] = MPL_malloc(MAX_COMB_DEGREE * sizeof(Comb_element), MPL_MEM_OTHER);
 	    for(j = 0; j < MAX_COMB_DEGREE; j++)
 	    {
 	        cmn_nbh_mat->comb_matrix[out_idx][j].opt = IDLE;
 	        cmn_nbh_mat->comb_matrix[out_idx][j].paired_frnd = -1;
 	    }
-	    cmn_nbh_mat->outnbrs_innbrs_bitmap[out_idx] = MPL_malloc(outnbrs_indegree[out_idx] * sizeof(int));
+	    cmn_nbh_mat->outnbrs_innbrs_bitmap[out_idx] = MPL_malloc(outnbrs_indegree[out_idx] * sizeof(int), MPL_MEM_OTHER);
 	    for(j = 0; j < outnbrs_indegree[out_idx]; j++)
 	    {
 	        cmn_nbh_mat->outnbrs_innbrs_bitmap[out_idx][j] = 1; //Set all incoming neighbors of all outgoing neighbors to active
 	    }
 
-	    cmn_nbh_mat->matrix[out_idx] = MPL_malloc(outnbrs_indegree[out_idx] * sizeof(int));
+	    cmn_nbh_mat->matrix[out_idx] = MPL_malloc(outnbrs_indegree[out_idx] * sizeof(int), MPL_MEM_OTHER);
 		mpi_errno = MPID_Irecv(cmn_nbh_mat->matrix[out_idx], outnbrs_indegree[out_idx],
 	                           MPI_INT, topo_ptr->topo.dist_graph.out[out_idx],
                                2000, comm_ptr, context_offset, &req_ptr);
@@ -349,7 +358,7 @@ int MPIR_Get_inNbrs_of_outNbrs(MPIR_Comm *comm_ptr, Common_nbrhood_matrix **cmn_
 		cmn_nbh_mat->sorted_cmn_nbrs[i].num_cmn_nbrs = 0;
 	}
 
-	mpi_errno = MPIR_Waitall_impl(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
+	mpi_errno = MPIR_Waitall(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
 	if (mpi_errno) MPIR_ERR_POP(mpi_errno);
 	all_reqs_idx = 0; //set index back to zero for future use
 
@@ -391,7 +400,7 @@ Common_neighbor* find_cmn_nbrs(Common_nbrhood_matrix *cmn_nbh_mat, int paired_fr
 {
     int i, j, k;
     k = 0;
-    Common_neighbor *cmn_nbrs = MPL_malloc(num_cmn_nbrs * sizeof(Common_neighbor));
+    Common_neighbor *cmn_nbrs = MPL_malloc(num_cmn_nbrs * sizeof(Common_neighbor), MPL_MEM_OTHER);
     for(i = 0; i < cmn_nbh_mat->num_rows; i++)
     {
         if(cmn_nbh_mat->ignore_row[i])
@@ -462,7 +471,7 @@ int MPIR_Update_common_nbrhood_mat(Common_nbrhood_matrix* cmn_nbh_mat, MPIR_Comm
                       MPIR_CONTEXT_INTRA_COLL : MPIR_CONTEXT_INTER_COLL;
     reqs_max_size = indegree + outdegree;
     all_reqs_idx = 0;
-    MPI_Request *all_reqs = MPL_malloc(reqs_max_size * sizeof(MPI_Request));
+    MPI_Request *all_reqs = MPL_malloc(reqs_max_size * sizeof(MPI_Request), MPL_MEM_OBJECT);
     MPIR_Request *req_ptr = NULL;
 
     //Sending my own innbrs bitmap to each not-ignored incoming neighbor
@@ -488,7 +497,7 @@ int MPIR_Update_common_nbrhood_mat(Common_nbrhood_matrix* cmn_nbh_mat, MPIR_Comm
         if (mpi_errno) MPIR_ERR_POP(mpi_errno);
         all_reqs[all_reqs_idx++] = req_ptr->handle;
     }
-    mpi_errno = MPIR_Waitall_impl(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
+    mpi_errno = MPIR_Waitall(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
     if (mpi_errno) MPIR_ERR_POP(mpi_errno);
     all_reqs_idx = 0; //set index back to zero for future use
     /** Done with getting the innbrs bitmaps of my outgoing neighbors **/
@@ -550,7 +559,7 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
                       MPIR_CONTEXT_INTRA_COLL : MPIR_CONTEXT_INTER_COLL;
     reqs_max_size = indegree + outdegree;
     all_reqs_idx = 0;
-    MPI_Request *all_reqs = MPL_malloc(reqs_max_size * sizeof(MPI_Request));
+    MPI_Request *all_reqs = MPL_malloc(reqs_max_size * sizeof(MPI_Request), MPL_MEM_OBJECT);
     MPIR_Request *req_ptr = NULL;
 
     //Extract common neighborhood matrix
@@ -709,7 +718,7 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
         print_vect(self_rank, indegree, srcs, "srcs:");
 #endif
 
-        mpi_errno = MPIR_Waitall_impl(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
+        mpi_errno = MPIR_Waitall(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
         if (mpi_errno) MPIR_ERR_POP(mpi_errno);
         all_reqs_idx = 0; //set index back to zero for future use
 
@@ -760,7 +769,7 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
                 have_atleast_one_active_in_nbr = 1;
             }
         }
-        mpi_errno = MPIR_Waitall_impl(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
+        mpi_errno = MPIR_Waitall(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
         if (mpi_errno) MPIR_ERR_POP(mpi_errno);
         all_reqs_idx = 0; //set index back to zero for future use
 
@@ -776,8 +785,8 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
     int **sched_msg, *sched_msg_sizes;
     sched_msg = NULL;
     sched_msg_sizes = NULL;
-    sched_msg = MPL_malloc(outdegree * sizeof(int*));
-    sched_msg_sizes = MPL_malloc(outdegree * sizeof(int));
+    sched_msg = MPL_malloc(outdegree * sizeof(int*), MPL_MEM_OTHER);
+    sched_msg_sizes = MPL_malloc(outdegree * sizeof(int), MPL_MEM_OTHER);
 
     for(i = 0; i < outdegree; i++)
     {
@@ -793,7 +802,7 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
 			 */
             sched_msg_sizes[i] = COMB_LIST_START_IDX + cmn_nbh_mat->comb_matrix_num_entries_in_row[i];
 		}
-        sched_msg[i] = MPL_malloc(sched_msg_sizes[i] * sizeof(int));
+        sched_msg[i] = MPL_malloc(sched_msg_sizes[i] * sizeof(int), MPL_MEM_OTHER);
 
         //The order of elements in the each sched_msg array: (Should really abstract this in future!)
         //0: is neighbor off or not
@@ -841,9 +850,9 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
 
     //Communicating the extracted scheduling information
     int **sched_recv_buffs;
-    sched_recv_buffs = MPL_malloc(indegree * sizeof(int*));
+    sched_recv_buffs = MPL_malloc(indegree * sizeof(int*), MPL_MEM_OTHER);
     for(i = 0; i < indegree; i++)
-    	sched_recv_buffs[i] = MPL_malloc(MAX_COMB_DEGREE * sizeof(int));
+    	sched_recv_buffs[i] = MPL_malloc(MAX_COMB_DEGREE * sizeof(int), MPL_MEM_OTHER);
     for(i = 0; i < outdegree; i++)
     {
         mpi_errno = MPID_Isend(sched_msg[i], sched_msg_sizes[i], MPI_INT,
@@ -859,13 +868,13 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
         if (mpi_errno) MPIR_ERR_POP(mpi_errno);
         all_reqs[all_reqs_idx++] = req_ptr->handle;
     }
-    mpi_errno = MPIR_Waitall_impl(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
+    mpi_errno = MPIR_Waitall(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
     if (mpi_errno) MPIR_ERR_POP(mpi_errno);
     all_reqs_idx = 0; //set index back to zero for future use
 
 #ifdef SHM_DEBUG
     int *sched_recv_buff_sizes; //We're using this for the print_mat matrix only
-    sched_recv_buff_sizes = MPL_malloc(indegree * sizeof(int));
+    sched_recv_buff_sizes = MPL_malloc(indegree * sizeof(int), MPL_MEM_OTHER);
     for(i = 0; i < indegree; i++)
         sched_recv_buff_sizes[i] = COMB_LIST_START_IDX + sched_recv_buffs[i][2];
     print_mat(self_rank, indegree, sched_recv_buff_sizes, sched_recv_buffs, -3,
@@ -875,7 +884,9 @@ int MPIR_Build_SHM_nbh_coll_patt(MPIR_Comm *comm_ptr)
 #endif
 
     //Attaching the received sched_recv_buff and cmn_nbh_mat to the topology of the communicator
-    MPIR_CHKPMEM_MALLOC(topo_ptr->topo.dist_graph.shm_nbh_coll_patt, SHM_nbh_coll_patt*, sizeof(SHM_nbh_coll_patt), mpi_errno, "topo_ptr->topo.dist_graph.shm_nbh_coll_patt");
+    MPIR_CHKPMEM_MALLOC(topo_ptr->topo.dist_graph.shm_nbh_coll_patt,
+                        SHM_nbh_coll_patt*, sizeof(SHM_nbh_coll_patt), mpi_errno,
+                        "topo_ptr->topo.dist_graph.shm_nbh_coll_patt", MPL_MEM_OTHER);
     topo_ptr->topo.dist_graph.shm_nbh_coll_patt->cmn_nbh_mat = cmn_nbh_mat;
     topo_ptr->topo.dist_graph.shm_nbh_coll_patt->incom_sched_mat = sched_recv_buffs;
 
@@ -932,7 +943,7 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
 	 * can be optimized later to use a better data structure.
 	 */
     int *glob_frndshp_arr;
-    glob_frndshp_arr = MPL_malloc(comm_size * sizeof(int));
+    glob_frndshp_arr = MPL_malloc(comm_size * sizeof(int), MPL_MEM_OTHER);
     for(i = 0; i < comm_size; i++)
         glob_frndshp_arr[i] = 0;
     for(i = 0; i < cmn_nbh_mat->num_rows; i++)
@@ -963,18 +974,19 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
                       MPIR_CONTEXT_INTRA_COLL : MPIR_CONTEXT_INTER_COLL;
     reqs_max_size = 2 * num_frnds;
     all_reqs_idx = 0;
-    MPI_Request *all_reqs = MPL_malloc(reqs_max_size * sizeof(MPI_Request));
+    MPI_Request *all_reqs = MPL_malloc(reqs_max_size * sizeof(MPI_Request), MPL_MEM_OTHER);
     MPIR_Request *req_ptr = NULL;
 
     //Build the maxHeap of friends from the global friendship array
     shm_heap *frndshp_maxHeap;
-    MPIR_CHKLMEM_MALLOC(frndshp_maxHeap, shm_heap*, sizeof(shm_heap), mpi_errno, "frndshp_maxHeap");
+    MPIR_CHKLMEM_MALLOC(frndshp_maxHeap, shm_heap*, sizeof(shm_heap),
+                        mpi_errno, "frndshp_maxHeap", MPL_MEM_OTHER);
     heap_init(frndshp_maxHeap, cmn_nbh_mat->num_elements);
     for(i = 0; i < comm_size; i++)
     {
         if(glob_frndshp_arr[i] < nbr_frndshp_thr || i == self_rank)
             continue;
-        heap_element *e = MPL_malloc(sizeof(heap_element));
+        heap_element *e = MPL_malloc(sizeof(heap_element), MPL_MEM_OTHER);
         e->key = glob_frndshp_arr[i]; //key is the number of common friends
         e->value = i; //value is the rank
         e->paired = 0;
@@ -982,9 +994,9 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
     }
 
     int *frnds_ranks, *frnds_pot_peers, *frnds_paired;
-    frnds_ranks = MPL_malloc(num_frnds * sizeof(int));
-	frnds_pot_peers = MPL_malloc(num_frnds * sizeof(int));
-	frnds_paired = MPL_malloc(num_frnds * sizeof(int));
+    frnds_ranks = MPL_malloc(num_frnds * sizeof(int), MPL_MEM_OTHER);
+	frnds_pot_peers = MPL_malloc(num_frnds * sizeof(int), MPL_MEM_OTHER);
+	frnds_paired = MPL_malloc(num_frnds * sizeof(int), MPL_MEM_OTHER);
 	for(i = 0; i < num_frnds; i++)
     {
     	frnds_ranks[i] = frndshp_maxHeap->heap_arr[i+1]->value;
@@ -1112,7 +1124,7 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
 #ifdef SHM_DEBUG
 		print_vect(self_rank, num_frnds, frnds_ranks, "frnds_ranks:");
 #endif
-		mpi_errno = MPIR_Waitall_impl(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
+		mpi_errno = MPIR_Waitall(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
 		if (mpi_errno) MPIR_ERR_POP(mpi_errno);
 		all_reqs_idx = 0; //set index back to zero for future use
 
@@ -1151,7 +1163,7 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
             if (mpi_errno) MPIR_ERR_POP(mpi_errno);
             all_reqs[all_reqs_idx++] = req_ptr->handle;
         }
-        mpi_errno = MPIR_Waitall_impl(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
+        mpi_errno = MPIR_Waitall(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
         if (mpi_errno) MPIR_ERR_POP(mpi_errno);
         all_reqs_idx = 0; //set index back to zero for future use
 
@@ -1162,7 +1174,7 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
         INFO(printf("Rank %d passed the second comm round; itr = %d\n", self_rank, itr));
        
 #ifdef SHM_DEBUG
-        int *vals = MPL_malloc(frndshp_maxHeap->count * sizeof(int));
+        int *vals = MPL_malloc(frndshp_maxHeap->count * sizeof(int), MPL_MEM_OTHER);
         if(!heap_get_values_array(frndshp_maxHeap, vals))
             print_vect(self_rank, frndshp_maxHeap->count, vals, "heap array values (ranks) before removing paired:");
         MPL_free(vals);
@@ -1182,7 +1194,7 @@ int MPIR_SHM_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
         }
 
 #ifdef SHM_DEBUG
-        vals = MPL_malloc(frndshp_maxHeap->count * sizeof(int));
+        vals = MPL_malloc(frndshp_maxHeap->count * sizeof(int), MPL_MEM_OTHER);
         if(!heap_get_values_array(frndshp_maxHeap, vals))
             print_vect(self_rank, frndshp_maxHeap->count, vals, "heap array values (ranks) after removing paired:");
         MPL_free(vals);

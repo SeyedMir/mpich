@@ -29,7 +29,7 @@ int heap_init(shm_heap *h, int arr_size)
 
 	h->arr_size = arr_size + 1; //+1 because we use 1-indexed array
 	h->count = 0;
-	h->heap_arr = MPL_malloc(h->arr_size * sizeof(heap_element*));
+	h->heap_arr = MPL_malloc(h->arr_size * sizeof(heap_element*), MPL_MEM_OTHER);
 
 	return 0;
 }
