@@ -1085,17 +1085,17 @@ int MPIDU_Sched_free(struct MPIDU_Sched *s)
         if(s->entries[i].type == MPIDU_SCHED_ENTRY_SEND)
         {
             MPIR_Comm_release(s->entries[i].u.send.comm);
-            dtype_release_if_not_builtin(s->entries[i].u.send.datatype);
+            MPIR_Datatype_release_if_not_builtin(s->entries[i].u.send.datatype);
         }
         else if(s->entries[i].type == MPIDU_SCHED_ENTRY_RECV)
         {
             MPIR_Comm_release(s->entries[i].u.recv.comm);
-            dtype_release_if_not_builtin(s->entries[i].u.recv.datatype);
+            MPIR_Datatype_release_if_not_builtin(s->entries[i].u.recv.datatype);
         }
         else if(s->entries[i].type == MPIDU_SCHED_ENTRY_COPY)
         {
-            dtype_release_if_not_builtin(s->entries[i].u.copy.intype);
-            dtype_release_if_not_builtin(s->entries[i].u.copy.outtype);
+            MPIR_Datatype_release_if_not_builtin(s->entries[i].u.copy.intype);
+            MPIR_Datatype_release_if_not_builtin(s->entries[i].u.copy.outtype);
         }
     }
     if(s->entries)

@@ -107,8 +107,8 @@ int MPIR_Ineighbor_allgather_sched_intra_shm(const void *sendbuf, int sendcount,
     void *incom_tmp_buf = NULL;
 
     //get extent and true extent of sendtype and recvtype
-    MPID_Datatype_get_extent_macro(recvtype, recvtype_extent);
-    MPID_Datatype_get_extent_macro(sendtype, sendtype_extent);
+    MPIR_Datatype_get_extent_macro(recvtype, recvtype_extent);
+    MPIR_Datatype_get_extent_macro(sendtype, sendtype_extent);
     MPIR_Type_get_true_extent_impl(recvtype, &recvtype_true_lb, &recvtype_true_extent);
     MPIR_Type_get_true_extent_impl(sendtype, &sendtype_true_lb, &sendtype_true_extent);
     recvtype_max_extent = MPL_MAX(recvtype_true_extent, recvtype_extent);
@@ -126,15 +126,19 @@ int MPIR_Ineighbor_allgather_sched_intra_shm(const void *sendbuf, int sendcount,
     incom_tmp_buf_extent = find_incom_tmp_buf_size(incom_sched_mat, indegree, recvbuf_extent);
     if(persistent_coll)
     {
-        MPIR_CHKPMEM_MALLOC(exchange_tmp_buf, void*, exchange_tmp_buf_extent, mpi_errno, "exchange_tmp_buf");
-        MPIR_CHKPMEM_MALLOC(incom_tmp_buf, void*, incom_tmp_buf_extent, mpi_errno, "incom_tmp_buf");
+        MPIR_CHKPMEM_MALLOC(exchange_tmp_buf, void*, exchange_tmp_buf_extent,
+                            mpi_errno, "exchange_tmp_buf", MPL_MEM_OTHER);
+        MPIR_CHKPMEM_MALLOC(incom_tmp_buf, void*, incom_tmp_buf_extent,
+                            mpi_errno, "incom_tmp_buf", MPL_MEM_OTHER);
         topo_ptr->topo.dist_graph.sched_mem_to_free[topo_ptr->topo.dist_graph.sched_mem_to_free_num_entries++] = exchange_tmp_buf;
         topo_ptr->topo.dist_graph.sched_mem_to_free[topo_ptr->topo.dist_graph.sched_mem_to_free_num_entries++] = incom_tmp_buf;
     }
     else //not persistent schedule
     {
-        MPIR_SCHED_CHKPMEM_MALLOC(exchange_tmp_buf, void*, exchange_tmp_buf_extent, mpi_errno, "exchange_tmp_buf");
-        MPIR_SCHED_CHKPMEM_MALLOC(incom_tmp_buf, void*, incom_tmp_buf_extent, mpi_errno, "incom_tmp_buf");
+        MPIR_SCHED_CHKPMEM_MALLOC(exchange_tmp_buf, void*, exchange_tmp_buf_extent,
+                                  mpi_errno, "exchange_tmp_buf", MPL_MEM_OTHER);
+        MPIR_SCHED_CHKPMEM_MALLOC(incom_tmp_buf, void*, incom_tmp_buf_extent,
+                                  mpi_errno, "incom_tmp_buf", MPL_MEM_OTHER);
     }
 
     int t;
@@ -173,7 +177,7 @@ int MPIR_Ineighbor_allgather_sched_intra_shm(const void *sendbuf, int sendcount,
                     {
                         mpi_errno = MPIR_Sched_send(exchange_tmp_buf,
                                     exchange_send_count + exchange_recv_count,
-                                    sendtype, dests[k], comm_ptr, s);
+                                    sendtype, dsts[k], comm_ptr, s);
                         if (mpi_errno) MPIR_ERR_POP(mpi_errno);
                     }
                 }
@@ -236,7 +240,7 @@ int MPIR_Ineighbor_allgather_sched_intra_shm(const void *sendbuf, int sendcount,
         if(!cmn_nbh_mat->ignore_row[i]) //out neighbor still active
         {
             mpi_errno = MPIR_Sched_send(sendbuf, sendcount, sendtype,
-                                        dests[i], comm_ptr, s);
+                                        dsts[i], comm_ptr, s);
             if (mpi_errno) MPIR_ERR_POP(mpi_errno);
         }
     }

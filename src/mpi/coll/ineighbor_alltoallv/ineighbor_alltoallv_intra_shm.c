@@ -62,15 +62,15 @@ int a2aV_make_all_combined_msgs(int t, int persistent_coll, void *exchange_recvb
     void *combined_sendbuf = NULL;
     if(persistent_coll)
     {
-        MPIR_CHKPMEM_MALLOC(combined_sendbuf, void*,
-                            combined_sendbuf_extent, mpi_errno, "combined_sendbuf");
+        MPIR_CHKPMEM_MALLOC(combined_sendbuf, void*, combined_sendbuf_extent,
+                            mpi_errno, "combined_sendbuf", MPL_MEM_OTHER);
         topo_ptr->topo.dist_graph.sched_mem_to_free[topo_ptr->
             topo.dist_graph.sched_mem_to_free_num_entries++] = combined_sendbuf;
     }
     else /* not persistent schedule */
     {
-        MPIR_SCHED_CHKPMEM_MALLOC(combined_sendbuf, void*,
-                                  combined_sendbuf_extent, mpi_errno, "combined_sendbuf");
+        MPIR_SCHED_CHKPMEM_MALLOC(combined_sendbuf, void*, combined_sendbuf_extent,
+                                  mpi_errno, "combined_sendbuf", MPL_MEM_OTHER);
     }
     *(char**)combined_sendbuf_ptr = combined_sendbuf; /* to return to the caller */
 #ifdef SHM_SCHED_DEBUG
@@ -211,8 +211,8 @@ int a2aV_send_own_off_counts(int t, const int *sendcounts, Common_nbrhood_matrix
     int friend = cmn_nbh_mat->comb_matrix[tmp_idx][t].paired_frnd;
     /* allocate own ranks_counts. size is 2*num_offloaded integers */
     int *own_off_counts;
-    MPIR_CHKPMEM_MALLOC(own_off_counts, int*,
-                        num_offloaded * sizeof(int), mpi_errno, "own_off_counts");
+    MPIR_CHKPMEM_MALLOC(own_off_counts, int*, num_offloaded * sizeof(int),
+                        mpi_errno, "own_off_counts", MPL_MEM_OTHER);
     *own_off_counts_ptr = own_off_counts; /* to return to the caller */
     /* populate it from dsts and sendcounts arrays */
     for(i = offload_start; i <= offload_end; i++)
@@ -257,8 +257,8 @@ int a2aV_get_friend_off_counts(int t, Common_nbrhood_matrix *cmn_nbh_mat, MPIR_C
     int friend = cmn_nbh_mat->comb_matrix[tmp_idx][t].paired_frnd;
     /* allocate ranks+counts. size is 2*num_onloaded integers */
     int *friend_off_counts;
-    MPIR_CHKPMEM_MALLOC(friend_off_counts, int*,
-                        num_onloaded * sizeof(int), mpi_errno, "friend_off_counts");
+    MPIR_CHKPMEM_MALLOC(friend_off_counts, int*, num_onloaded * sizeof(int),
+                        mpi_errno, "friend_off_counts", MPL_MEM_OTHER);
     *friend_off_counts_ptr = friend_off_counts; /* to return to the caller */
     /* recv from friend into friend_off_counts */
     int context_offset = (comm_ptr->comm_kind == MPIR_COMM_KIND__INTRACOMM) ?
@@ -316,21 +316,21 @@ int a2aV_exchange_data_with_friend(int t, int persistent_coll, const void *sendb
     void *exchange_recvbuf = NULL;
     if(persistent_coll)
     {
-        MPIR_CHKPMEM_MALLOC(exchange_sendbuf, void*,
-                            exchange_sendbuf_extent, mpi_errno, "exchange_sendbuf");
+        MPIR_CHKPMEM_MALLOC(exchange_sendbuf, void*, exchange_sendbuf_extent,
+                            mpi_errno, "exchange_sendbuf", MPL_MEM_OTHER);
         topo_ptr->topo.dist_graph.sched_mem_to_free[topo_ptr->
             topo.dist_graph.sched_mem_to_free_num_entries++] = exchange_sendbuf;
-        MPIR_CHKPMEM_MALLOC(exchange_recvbuf, void*,
-                            exchange_recvbuf_extent, mpi_errno, "exchange_recvbuf");
+        MPIR_CHKPMEM_MALLOC(exchange_recvbuf, void*, exchange_recvbuf_extent,
+                            mpi_errno, "exchange_recvbuf", MPL_MEM_OTHER);
         topo_ptr->topo.dist_graph.sched_mem_to_free[topo_ptr->
             topo.dist_graph.sched_mem_to_free_num_entries++] = exchange_recvbuf;
     }
     else /* not persistent schedule */
     {
-        MPIR_SCHED_CHKPMEM_MALLOC(exchange_sendbuf, void*,
-                                  exchange_sendbuf_extent, mpi_errno, "exchange_sendbuf");
-        MPIR_SCHED_CHKPMEM_MALLOC(exchange_recvbuf, void*,
-                                  exchange_recvbuf_extent, mpi_errno, "exchange_recvbuf");
+        MPIR_SCHED_CHKPMEM_MALLOC(exchange_sendbuf, void*, exchange_sendbuf_extent,
+                                  mpi_errno, "exchange_sendbuf", MPL_MEM_OTHER);
+        MPIR_SCHED_CHKPMEM_MALLOC(exchange_recvbuf, void*, exchange_recvbuf_extent,
+                                  mpi_errno, "exchange_recvbuf", MPL_MEM_OTHER);
     }
     *(char**)exchange_sendbuf_ptr = exchange_sendbuf; /* to return to the caller */
     *(char**)exchange_recvbuf_ptr = exchange_recvbuf; /* to return to the caller */
@@ -370,7 +370,7 @@ int a2aV_exchange_data_with_friend(int t, int persistent_coll, const void *sendb
     if (mpi_errno) MPIR_ERR_POP(mpi_errno);
     all_reqs[all_reqs_idx++] = req_ptr->handle;
 
-    mpi_errno = MPIR_Waitall_impl(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
+    mpi_errno = MPIR_Waitall(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
     if (mpi_errno) MPIR_ERR_POP(mpi_errno);
     all_reqs_idx = 0; /* set index back to zero for future use */
 
@@ -491,8 +491,8 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
     MPI_Aint sendbuf_extent;
 
     /* get extent and true extent of sendtype and recvtype */
-    MPID_Datatype_get_extent_macro(recvtype, recvtype_extent);
-    MPID_Datatype_get_extent_macro(sendtype, sendtype_extent);
+    MPIR_Datatype_get_extent_macro(recvtype, recvtype_extent);
+    MPIR_Datatype_get_extent_macro(sendtype, sendtype_extent);
     MPIR_Type_get_true_extent_impl(recvtype, &recvtype_true_lb, &recvtype_true_extent);
     MPIR_Type_get_true_extent_impl(sendtype, &sendtype_true_lb, &sendtype_true_extent);
     recvtype_max_extent = MPL_MAX(recvtype_true_extent, recvtype_extent);
@@ -520,14 +520,15 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
     incom_tmp_buf_extent = recvbuf_extent;
     if(persistent_coll)
     {
-        MPIR_CHKPMEM_MALLOC(incom_tmp_buf, void*, incom_tmp_buf_extent, mpi_errno, "incom_tmp_buf");
+        MPIR_CHKPMEM_MALLOC(incom_tmp_buf, void*, incom_tmp_buf_extent,
+                            mpi_errno, "incom_tmp_buf", MPL_MEM_OTHER);
         topo_ptr->topo.dist_graph.sched_mem_to_free[topo_ptr->
             topo.dist_graph.sched_mem_to_free_num_entries++] = incom_tmp_buf;
     }
     else /* not persistent schedule */
     {
-        MPIR_SCHED_CHKPMEM_MALLOC(incom_tmp_buf, void*,
-                                  incom_tmp_buf_extent, mpi_errno, "incom_tmp_buf");
+        MPIR_SCHED_CHKPMEM_MALLOC(incom_tmp_buf, void*, incom_tmp_buf_extent,
+                                  mpi_errno, "incom_tmp_buf", MPL_MEM_OTHER);
     }
 
     int all_reqs_idx = 0;
@@ -555,7 +556,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
             mpi_errno = a2aV_send_own_off_counts(t, sendcounts, cmn_nbh_mat, comm_ptr,
                                             &(all_reqs[all_reqs_idx++]), &own_off_counts);
 
-            mpi_errno = MPIR_Waitall_impl(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
+            mpi_errno = MPIR_Waitall(all_reqs_idx, all_reqs, MPI_STATUS_IGNORE);
             if (mpi_errno) MPIR_ERR_POP(mpi_errno);
             all_reqs_idx = 0; /* set index back to zero for future use */
 
@@ -582,7 +583,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
 
             /* allocate and populate all combined messages */
             a2aV_make_all_combined_msgs(t, persistent_coll, exchange_recvbuf, friend_off_counts,
-                                   sendbuf, sendcounts, sdispls, dests,
+                                   sendbuf, sendcounts, sdispls, dsts,
                                    sendtype, sendtype_extent, sendtype_max_extent,
                                    cmn_nbh_mat, comm_ptr, s, &combined_sendbuf);
             if(!persistent_coll)
@@ -593,7 +594,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
             /* Schedule for the outgoing combined messages
              * (CANNOT be mixed with combined buffer building)*/
             a2aV_send_to_onloaded_nbrs(t, combined_sendbuf, friend_off_counts,
-                                       sendcounts, sdispls, dests,
+                                       sendcounts, sdispls, dsts,
                                        sendtype, sendtype_extent,
                                        cmn_nbh_mat, comm_ptr, s);
             /* We can (should) free own and friend's off-counts arrays
@@ -642,7 +643,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
 
 #ifdef SHM_SCHED_DEBUG
         /***** FOR DEBUGGING ONLY *****/
-        mpi_errno = MPIR_Waitall_impl(debug_glob_all_reqs_idx,
+        mpi_errno = MPIR_Waitall(debug_glob_all_reqs_idx,
                                       debug_glob_all_reqs, MPI_STATUS_IGNORE);
         if (mpi_errno) MPIR_ERR_POP(mpi_errno);
         debug_glob_all_reqs_idx = 0; /* set index back to zero for future use */
@@ -697,7 +698,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
         if(!cmn_nbh_mat->ignore_row[i]) /* out neighbor still active */
         {
             mpi_errno = MPIR_Sched_send(((char*)sendbuf) + sdispls[i] * sendtype_extent,
-                                        sendcounts[i], sendtype, dests[i], comm_ptr, s);
+                                        sendcounts[i], sendtype, dsts[i], comm_ptr, s);
             if (mpi_errno) MPIR_ERR_POP(mpi_errno);
 #ifdef SHM_SCHED_DEBUG
             /***** FOR DEBUGGING ONLY *****/
@@ -705,7 +706,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
                                       MPIR_CONTEXT_INTRA_COLL : MPIR_CONTEXT_INTER_COLL;
             MPIR_Request *req_ptr = NULL;
             mpi_errno = MPID_Isend(((char*)sendbuf) + sdispls[i] * sendtype_extent,
-                                   sendcounts[i], sendtype, dests[i],
+                                   sendcounts[i], sendtype, dsts[i],
                                    1000, comm_ptr, context_offset, &req_ptr);
             if (mpi_errno) MPIR_ERR_POP(mpi_errno);
             debug_glob_all_reqs[debug_glob_all_reqs_idx++] = req_ptr->handle;
@@ -754,7 +755,7 @@ int MPIR_Ineighbor_alltoallv_sched_intra_shm(const void *sendbuf, const int send
 
 #ifdef SHM_SCHED_DEBUG
     /***** FOR DEBUGGING ONLY *****/
-    mpi_errno = MPIR_Waitall_impl(debug_glob_all_reqs_idx, debug_glob_all_reqs, MPI_STATUS_IGNORE);
+    mpi_errno = MPIR_Waitall(debug_glob_all_reqs_idx, debug_glob_all_reqs, MPI_STATUS_IGNORE);
     if (mpi_errno) MPIR_ERR_POP(mpi_errno);
     debug_glob_all_reqs_idx = 0; /* set index back to zero for future use */
     print_vect(comm_ptr->rank, indegree, (int*)incom_tmp_buf,
