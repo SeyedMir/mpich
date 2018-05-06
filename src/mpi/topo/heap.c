@@ -9,8 +9,8 @@
 #include "mpiimpl.h"
 #include "heap.h"
 
-//We use 1-indexed array for heap implementation.
-//Element at index 0 is just undefined/ignored.
+/* We use 1-indexed array for heap implementation */
+/* Element at index 0 is just undefined/ignored */
 
 #define LCHILD(x) 2 * x
 #define RCHILD(x) 2 * x + 1
@@ -26,7 +26,7 @@ int heap_init(heap *h, int arr_size)
 		return -1;
 	}
 
-	h->arr_size = arr_size + 1; //+1 because we use 1-indexed array
+	h->arr_size = arr_size + 1; /* +1 because we use 1-indexed array */
 	h->count = 0;
 	h->heap_arr = MPL_malloc(h->arr_size * sizeof(heap_element*), MPL_MEM_OTHER);
 
@@ -81,17 +81,17 @@ int heap_insert(heap *h,  heap_element *e)
 	h->count = h->count + 1;
 	h->heap_arr[h->count] = e;
 
-	//Shifting up if necessary
+	/* Shifting up if necessary */
 	int i = h->count;
 	while(PARENT(i) >= 1)
 	{
 		if(h->heap_arr[i]->key <= h->heap_arr[PARENT(i)]->key)
-			break; //we're good.
+			break;
 		else
 		{
-			//swap i with its parent
+			/* Swap i with its parent */
 			h->heap_arr[i] = h->heap_arr[PARENT(i)];
-			h->heap_arr[PARENT(i)] = e; //the to-be-inserted new element (e) is always a copy of the ith element
+			h->heap_arr[PARENT(i)] = e; /* The new element to-be-inserted (e) is always a copy of the ith element */
 			i = PARENT(i);
 		}
 	}
@@ -116,23 +116,23 @@ int heap_remove_max(heap *h)
 	h->heap_arr[1] = h->heap_arr[h->count];
 	h->count = h->count - 1;
 
-	//Shifting down if necessary
+	/* Shifting down if necessary */
 	int i = 1;
 	while(LCHILD(i) <= h->count)
 	{
-		//find the largest child first
+		/* find the largest child first */
 		int largest = LCHILD(i);
 		if(RCHILD(i) <= h->count)
 		    if(h->heap_arr[RCHILD(i)]->key > h->heap_arr[largest]->key)
 		        largest = RCHILD(i);
 
 		if(h->heap_arr[i]->key >= h->heap_arr[largest]->key)
-			break; //we're good.
+			break;
 		else
 		{
-			//swap i with largest
+			/* swap i with largest */
 			h->heap_arr[i] = h->heap_arr[largest];
-			h->heap_arr[largest] = h->heap_arr[h->count + 1];//count + 1 is a copy of the ith element
+			h->heap_arr[largest] = h->heap_arr[h->count + 1]; /* count + 1 is a copy of the ith element */
 			i = largest;
 		}
 	}
@@ -164,43 +164,43 @@ int heap_remove_index(heap *h, int index)
     h->heap_arr[index] = h->heap_arr[h->count];
     h->count = h->count - 1;
 
-    if(index == h->count + 1) //We are removing the last element
+    if(index == h->count + 1) /* We are removing the last element */
     {
         MPL_free(removed_element);
         return 0;
     }
 
     int i = index;
-    //Shifting up if necessary
+    /* Shifting up if necessary */
     while(PARENT(i) >= 1)
     {
         if(h->heap_arr[i]->key <= h->heap_arr[PARENT(i)]->key)
-            break; //we're good.
+            break;
         else
         {
-            //swap i with its parent
+            /* Swap i with its parent */
             h->heap_arr[i] = h->heap_arr[PARENT(i)];
-            h->heap_arr[PARENT(i)] = h->heap_arr[h->count + 1];//count + 1 is a copy of the ith element
+            h->heap_arr[PARENT(i)] = h->heap_arr[h->count + 1]; /* count + 1 is a copy of the ith element */
             i = PARENT(i);
         }
     }
 
-    //Shifting down if necessary
+    /* Shifting down if necessary */
     while(LCHILD(i) <= h->count)
     {
-        //find the largest child first
+        /* find the largest child first */
         int largest = LCHILD(i);
         if(RCHILD(i) <= h->count)
             if(h->heap_arr[RCHILD(i)]->key > h->heap_arr[largest]->key)
                 largest = RCHILD(i);
 
         if(h->heap_arr[i]->key >= h->heap_arr[largest]->key)
-            break; //we're good.
+            break;
         else
         {
-            //swap i with largest
+            /* Swap i with largest */
             h->heap_arr[i] = h->heap_arr[largest];
-            h->heap_arr[largest] = h->heap_arr[h->count + 1];//count + 1 is a copy of the ith element
+            h->heap_arr[largest] = h->heap_arr[h->count + 1]; /* count + 1 is a copy of the ith element */
             i = largest;
         }
     }

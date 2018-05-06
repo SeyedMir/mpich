@@ -351,7 +351,7 @@ static int MPIDU_Sched_continue(struct MPIDU_Sched *s)
         if (i == s->idx && e->status >= MPIDU_SCHED_ENTRY_STATUS_COMPLETE) {
 			if(s->is_persistent)
 			{
-				//Reset the entry's state for future calls.
+				/* Reset the entry's state for future calls */
 				e->status = MPIDU_SCHED_ENTRY_STATUS_NOT_STARTED;
 			}
             ++s->idx;   /* this is valid even for barrier entries */
@@ -984,7 +984,8 @@ static int MPIDU_Sched_progress_state(struct MPIDU_Sched_state *state, int *made
 
             if (i == s->idx && e->status >= MPIDU_SCHED_ENTRY_STATUS_COMPLETE) {
                 if(s->is_persistent)
-                    e->status = MPIDU_SCHED_ENTRY_STATUS_NOT_STARTED; //Reset the entry's state for future calls. Don't do this any sooner.
+                    /* Reset the entry's state for future calls. Don't do this any sooner */
+                    e->status = MPIDU_SCHED_ENTRY_STATUS_NOT_STARTED;
                 ++s->idx;
                 MPL_DBG_MSG_D(MPIR_DBG_COMM, VERBOSE, "completed OTHER entry %d\n", (int) i);
                 if (e->is_barrier) {
