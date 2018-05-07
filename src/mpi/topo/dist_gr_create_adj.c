@@ -13,8 +13,27 @@
 /*                Neighborhood Collective Communication                */
 /*                    Seyed Hessamedin Mirsadeghi                      */
 /*---------------------------------------------------------------------*/
+/*
+=== BEGIN_MPI_T_CVAR_INFO_BLOCK ===
+
+cvars:
+    - name        : MPIR_CVAR_NEIGHBOR_COLL_MSG_COMB_FRNDSHP_THRSHLD
+      category    : COLLECTIVE
+      type        : int
+      default     : 4
+      class       : device
+      verbosity   : MPI_T_VERBOSITY_USER_BASIC
+      scope       : MPI_T_SCOPE_ALL_EQ
+      description : |-
+        Value of the friendship threshold used in the message
+        combining algorithm for neighborhood collectives.
+
+=== END_MPI_T_CVAR_INFO_BLOCK ===
+*/
+
 #include <math.h>
 #include "heap.h"
+
 int free_nbh_mat(Common_nbrhood_matrix *cmn_nbh_mat)
 {
     if(!cmn_nbh_mat)
@@ -736,7 +755,8 @@ int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
 		printf("Rank %d: Warning! loop_count = %d reached MAX_LOOP_COUNT, while num_frnds = %d\n", self_rank, loop_count, num_frnds);
 
     if(num_frnds == 0 && loop_count == 1)
-        printf("No friend was initially found by rank %d with the threshold set to %d.\n", self_rank, nbr_frndshp_thr);
+        printf("No friend was initially found by rank %d with the threshold set to %d.\n",
+		self_rank, MPIR_CVAR_NEIGHBOR_COLL_MSG_COMB_FRNDSHP_THRSHLD);
 
     /* Once a rank gets out of the while loop above due
      * to num_frnds == 0, it should still issue the recv
@@ -914,6 +934,7 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
     int i, j, all_reqs_idx, reqs_max_size, context_offset;
     int self_rank = comm_ptr->rank;
     int comm_size = comm_ptr->local_size;
+    int nbr_frndshp_thr = MPIR_CVAR_NEIGHBOR_COLL_MSG_COMB_FRNDSHP_THRSHLD;
     int num_frnds = 0; /* Number of friends that remain active after pairing attempt */
     int my_pot_peer = -1;
     int my_pot_peer_idx = -1; /* this is the index in the frnds_pot_peers array */
@@ -922,7 +943,6 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
     int itr = 0;
     int f1 = -1;
     int f1_idx = -1;
-    int minusTwo = -2;
 
     MPIR_CHKLMEM_DECL(1);
 
@@ -930,11 +950,11 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
     print_nbh_mat(comm_ptr->rank, cmn_nbh_mat, -3, "My outnbrs_innbrs are");
 #endif
 
-    /*Build the global friendship array that counts 
-	 * the number of neighbors that I have in common 
-	 * with each other rank in the communicator. This
-	 * can be optimized later to use a better data structure.
-	 */
+    /* Build the global friendship array that counts
+     * the number of neighbors that I have in common
+     * with each other rank in the communicator. This
+     * can be optimized later to use a better data structure.
+     */
     int *glob_frndshp_arr;
     glob_frndshp_arr = MPL_malloc(comm_size * sizeof(int), MPL_MEM_OTHER);
     for(i = 0; i < comm_size; i++)
@@ -1416,7 +1436,7 @@ int MPI_Dist_graph_create_adjacent(MPI_Comm comm_old,
     MPIR_OBJ_PUBLISH_HANDLE(*comm_dist_graph, comm_dist_graph_ptr->handle);
     MPIR_CHKPMEM_COMMIT();
 
-    if(nbr_impl == 1)
+    if(MPIR_Ineighbor_allgather_intra_algo_choice == MPIR_INEIGHBOR_ALLGATHER_INTRA_ALGO_COMB)
     {
         double build_nbh_coll_patt_time = -MPI_Wtime();
         MPIR_Build_nbh_coll_patt(comm_dist_graph_ptr);
@@ -1424,12 +1444,11 @@ int MPI_Dist_graph_create_adjacent(MPI_Comm comm_old,
 
         double max_build_nbh_coll_patt_time = 0;
 		MPIR_Errflag_t errflag = MPIR_ERR_NONE;
-        MPIR_Reduce_impl(&build_nbh_coll_patt_time,
-							&max_build_nbh_coll_patt_time,
-                            1, MPI_DOUBLE, MPI_MAX, 0, comm_ptr,
-							&errflag);
+        MPIR_Reduce_impl(&build_nbh_coll_patt_time, &max_build_nbh_coll_patt_time,
+                         1, MPI_DOUBLE, MPI_MAX, 0, comm_ptr, &errflag);
         if(comm_ptr->rank == 0)
-            printf("\nTime to build the neighborhood pattern (max): %lf (s)\n", max_build_nbh_coll_patt_time);
+            printf("\nTime to build the neighborhood pattern (max): %lf (s)\n",
+		   max_build_nbh_coll_patt_time);
     }
 
     /* ... end of body of routine ... */

@@ -11,13 +11,6 @@
 /*                Neighborhood Collective Communication                */
 /*                    Seyed Hessamedin Mirsadeghi                      */
 /*---------------------------------------------------------------------*/
-#ifdef DEFINE_GLOBALS
-#define EXTERN
-#else
-#define EXTERN extern
-#endif
-EXTERN int nbr_impl;
-EXTERN int nbr_frndshp_thr;
 #define INFO(stmt)
 #define INFO2(stmt)
 /* #define DEBUG */
