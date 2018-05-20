@@ -121,7 +121,7 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
     /* TODO: What is the largest offset we add to buffers?
      * MPIR_Ensure_Aint_fits_in_pointer()?
      */
- 
+
     exchange_tmp_buf_extent = 2 * sendbuf_extent; /* locally known for a simple allgather */
     incom_tmp_buf_extent = find_incom_tmp_buf_size(incom_sched_mat, indegree, recvbuf_extent);
     if(persistent_coll)
@@ -133,7 +133,7 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
         topo_ptr->topo.dist_graph.sched_mem_to_free[topo_ptr->topo.dist_graph.sched_mem_to_free_num_entries++] = exchange_tmp_buf;
         topo_ptr->topo.dist_graph.sched_mem_to_free[topo_ptr->topo.dist_graph.sched_mem_to_free_num_entries++] = incom_tmp_buf;
     }
-    else 
+    else
     {
         MPIR_SCHED_CHKPMEM_MALLOC(exchange_tmp_buf, void*, exchange_tmp_buf_extent,
                                   mpi_errno, "exchange_tmp_buf", MPL_MEM_OTHER);
@@ -254,7 +254,7 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
     for(i = 0; i < indegree; i++)
     {
         if(!incom_sched_mat[i][0] && incom_sched_mat[i][1] >= cmn_nbh_mat->t)
-        {   
+        {
             /* On incoming neighbors not covered before */
             /* Schedule a receive from the corresponding source */
             incom_recv_count = incom_sched_mat[i][2] * recvcount;

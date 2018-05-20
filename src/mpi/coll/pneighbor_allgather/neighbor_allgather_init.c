@@ -68,7 +68,7 @@ int MPIR_Neighbor_allgather_init_impl(const void *sendbuf, int sendcount, MPI_Da
     {
         if(comm_ptr->rank == 0)
             printf("Warning: Overwriting a previous shm_nbh_coll_sched!\n");
-        
+
         /* Ideally, we should attach these memories to the
          * schedule to avoid this ugly code here and in MPIR_Comm_free
          */
@@ -82,7 +82,7 @@ int MPIR_Neighbor_allgather_init_impl(const void *sendbuf, int sendcount, MPI_Da
 
     mpi_errno = MPIR_Sched_create(&s);
     if (mpi_errno) MPIR_ERR_POP(mpi_errno);
-    
+
     MPIR_Sched_make_persistent(&s);
 
     mpi_errno = MPIR_Ineighbor_allgather_sched(sendbuf, sendcount, sendtype,

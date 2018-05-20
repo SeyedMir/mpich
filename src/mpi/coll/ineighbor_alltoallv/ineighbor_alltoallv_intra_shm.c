@@ -52,7 +52,7 @@ int a2aV_make_all_combined_msgs(int t, int persistent_coll, void *exchange_recvb
         fc_idx++;
     }
 #ifdef SCHED_DEBUG
-    sprintf(content, 
+    sprintf(content,
             "combined_send_count = %d (for all onloaded at t = %d)\n", combined_sendbuf_count, t);
     print_in_file(comm_ptr->rank, content);
 #endif

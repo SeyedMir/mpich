@@ -333,7 +333,7 @@ int MPIR_Get_inNbrs_of_outNbrs(MPIR_Comm *comm_ptr, Common_nbrhood_matrix **cmn_
     cmn_nbh_mat->t = 0; /* Keeping track of pairing steps order */
     cmn_nbh_mat->row_sizes = outnbrs_indegree;
 
-	for(in_idx = 0; in_idx < indegree; in_idx++) 
+	for(in_idx = 0; in_idx < indegree; in_idx++)
 	{
 		mpi_errno = MPID_Isend(topo_ptr->topo.dist_graph.in, indegree, MPI_INT,
 	                           topo_ptr->topo.dist_graph.in[in_idx],
@@ -342,7 +342,7 @@ int MPIR_Get_inNbrs_of_outNbrs(MPIR_Comm *comm_ptr, Common_nbrhood_matrix **cmn_
         all_reqs[all_reqs_idx++] = req_ptr->handle;
 		cmn_nbh_mat->my_innbrs_bitmap[in_idx] = 1; /* Set all incoming neighbors to active */
 	}
-	for(out_idx = 0; out_idx < outdegree; out_idx++) 
+	for(out_idx = 0; out_idx < outdegree; out_idx++)
 	{
 		cmn_nbh_mat->comb_matrix[out_idx] = MPL_malloc(MAX_COMB_DEGREE * sizeof(Comb_element), MPL_MEM_OTHER);
 	    for(j = 0; j < MAX_COMB_DEGREE; j++)
@@ -542,7 +542,7 @@ int MPIR_Update_common_nbrhood_mat(Common_nbrhood_matrix* cmn_nbh_mat, MPIR_Comm
 #define FCNAME MPL_QUOTE(FUNCNAME)
 int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
 {
-	/* This is the entry point to the algorithm that 
+	/* This is the entry point to the algorithm that
 	 * will build the message-combining pattern. It
 	 * is called in MPI_Dist_graph_create_adjacent().
 	 */
@@ -663,7 +663,7 @@ int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
 				if (mpi_errno) MPIR_ERR_POP(mpi_errno);
 				all_reqs[all_reqs_idx++] = req_ptr->handle;
 			}
-            
+
 
             /* After offloading/onloading, mark the kept neighbors
              * with the rank of the friend with which it paired.
@@ -807,10 +807,10 @@ int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
 		{
             sched_msg_sizes[i] = COMB_LIST_START_IDX + 1 + cmn_nbh_mat->comb_matrix_num_entries_in_row[i];
 		}
-        else 
+        else
 		{
-			/* The last element for offloaded rows represents the rank to 
-			 * which the neighbor is offloaded (it has 'S' as the operation). 
+			/* The last element for offloaded rows represents the rank to
+			 * which the neighbor is offloaded (it has 'S' as the operation).
 			 * We do not want to communicate this last element.
 			 */
             sched_msg_sizes[i] = COMB_LIST_START_IDX + cmn_nbh_mat->comb_matrix_num_entries_in_row[i];
@@ -1051,18 +1051,18 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
 	    {
 	        /* We consider two cases:
 			 * a) my_pot_peer is still among my friends AND
-	         *    my potential peer has failed too AND 
+	         *    my potential peer has failed too AND
 			 *    self_rank < my_pot_peer.
              * b) my potential peer just gave up OR
-			 *    my potential peer has NOT failed (already paired) OR 
+			 *    my potential peer has NOT failed (already paired) OR
 			 *    my potential peer has failed BUT self_rank >= my_pot_peer.
              */
 
 	        /* update my_pot_peer_idx with respect to the updated frnds_ranks arrays */
 	        my_pot_peer_idx = find_in_arr(frnds_ranks, num_frnds, my_pot_peer);
 
-	        if(my_pot_peer_idx != -1		  && 
-			   !frnds_paired[my_pot_peer_idx] && 
+	        if(my_pot_peer_idx != -1		  &&
+			   !frnds_paired[my_pot_peer_idx] &&
 			   self_rank < my_pot_peer )
             {
 				/* Case (a). Just stick to the previously chosen friend; do nothing */
@@ -1075,7 +1075,7 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
                  */
                 f1_idx = find_willing_to_pair_idx(frnds_pot_peers, num_frnds, self_rank, 0);
 				/* We need an f1 whose rank is less than self_rank */
-                while(f1_idx != -1 && frnds_ranks[f1_idx] > self_rank) 
+                while(f1_idx != -1 && frnds_ranks[f1_idx] > self_rank)
                     f1_idx = find_willing_to_pair_idx(frnds_pot_peers, num_frnds, self_rank, f1_idx+1);
                 if(f1_idx != -1) /* Found a valid f1 */
                 {
@@ -1086,18 +1086,18 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
                 {
                     /* Throw away the previously chosen friend. But how do
                      * we know if the previous chosen friend would also
-                     * throw me away or not? This could lead to a deadlock 
-					 * when the friends communicate with each other. To solve 
+                     * throw me away or not? This could lead to a deadlock
+					 * when the friends communicate with each other. To solve
 					 * this issue, we keep track of the friends with whom we
                      * should communicate in the frnds_ranks array, and do
                      * not use the heap array for this purpose. NOTE: The
                      * removal below is why the heap array could be different
-                     * from frnds_ranks and other related arrays; we are removing 
+                     * from frnds_ranks and other related arrays; we are removing
 					 * a friend that is NOT paired.
                      */
                     int idx = heap_find_value(frndshp_maxHeap, my_pot_peer);
                     if(idx != -1)
-                        heap_remove_index(frndshp_maxHeap, idx); 
+                        heap_remove_index(frndshp_maxHeap, idx);
                     if(heap_is_empty(frndshp_maxHeap))
                     {
                         INFO2(printf("Rank %d failed to pair with anyone; heap is empty (iteration %d)\n", self_rank, itr););
@@ -1186,7 +1186,7 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
 #endif
 
         INFO(printf("Rank %d passed the second comm round; itr = %d\n", self_rank, itr));
-       
+
 #ifdef DEBUG
         int *vals = MPL_malloc(frndshp_maxHeap->count * sizeof(int), MPL_MEM_OTHER);
         if(!heap_get_values_array(frndshp_maxHeap, vals))
@@ -1194,7 +1194,7 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
         MPL_free(vals);
 #endif
 
-        /* Remove from the heap those friends that 
+        /* Remove from the heap those friends that
 		 * have already been paired or terminated.
 		 */
         for(i = 0; i < num_frnds; i++)
@@ -1214,7 +1214,7 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
         MPL_free(vals);
 #endif
 
-        /* Update the frnd_ranks and frnds_pot_peers arrays so 
+        /* Update the frnd_ranks and frnds_pot_peers arrays so
 		 * to include only non-paired and non-terminal friends.
 		 */
         int new_num_frnds = 0;
