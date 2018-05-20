@@ -287,8 +287,8 @@ int a2aV_exchange_data_with_friend(int t, int persistent_coll, const void *sendb
                                    MPI_Datatype sendtype, MPI_Aint sendtype_extent,
                                    MPI_Aint sendtype_max_extent, int *own_off_counts,
                                    int *friend_off_counts, Common_nbrhood_matrix *cmn_nbh_mat,
-                                   MPIR_Comm *comm_ptr, MPIR_Sched_t s, void **exchange_sendbuf_ptr,
-                                   void **exchange_recvbuf_ptr)
+                                   MPIR_Comm *comm_ptr, MPIR_Sched_t s,
+                                   void **exchange_sendbuf_ptr, void **exchange_recvbuf_ptr)
 {
     MPIR_CHKPMEM_DECL(2);
     MPIR_SCHED_CHKPMEM_DECL(2);
@@ -374,8 +374,10 @@ int a2aV_exchange_data_with_friend(int t, int persistent_coll, const void *sendb
     if (mpi_errno) MPIR_ERR_POP(mpi_errno);
     all_reqs_idx = 0; /* set index back to zero for future use */
 
-    print_vect(comm_ptr->rank, own_off_counts_sum, (int*)exchange_sendbuf, "exchange_sendbuf: ");
-    print_vect(comm_ptr->rank, friend_off_counts_sum, (int*)exchange_recvbuf, "exchange_recvbuf: ");
+    print_vect(comm_ptr->rank, own_off_counts_sum,
+               (int*)exchange_sendbuf, "exchange_sendbuf: ");
+    print_vect(comm_ptr->rank, friend_off_counts_sum,
+               (int*)exchange_recvbuf, "exchange_recvbuf: ");
 #endif
     /* send exchange_sendbuf to friend
      * - type is obviously sendtype.
@@ -416,7 +418,8 @@ fn_fail:
     goto fn_exit;
 }
 
-int a2aV_find_incom_recv_count(int *incom_sched_vec, int *srcs, const int *recvcounts, int indegree)
+int a2aV_find_incom_recv_count(int *incom_sched_vec, int *srcs,
+                               const int *recvcounts, int indegree)
 {
     int i, nbr_idx, sum = 0;
     for(i = 0; i < incom_sched_vec[2]; i++)
@@ -823,7 +826,8 @@ int MPIR_Ineighbor_alltoallv_sched_intra_comb(const void *sendbuf, const int sen
                          &max_sched_time, 1, MPI_DOUBLE, MPI_MAX, 0, comm_ptr, &errflag);
         if(comm_ptr->rank == 0)
         {
-            printf("Time to build the SHM neighborhood schedule (max): %lf (s)\n", max_sched_time);
+            printf("Time to build the SHM neighborhood schedule (max): %lf (s)\n",
+                   max_sched_time);
             fflush(stdout);
         }
     }

@@ -91,7 +91,8 @@ int heap_insert(heap *h,  heap_element *e)
 		{
 			/* Swap i with its parent */
 			h->heap_arr[i] = h->heap_arr[PARENT(i)];
-			h->heap_arr[PARENT(i)] = e; /* The new element to-be-inserted (e) is always a copy of the ith element */
+            /* The new element to-be-inserted (e) is always a copy of the ith element */
+			h->heap_arr[PARENT(i)] = e;
 			i = PARENT(i);
 		}
 	}
@@ -132,7 +133,8 @@ int heap_remove_max(heap *h)
 		{
 			/* swap i with largest */
 			h->heap_arr[i] = h->heap_arr[largest];
-			h->heap_arr[largest] = h->heap_arr[h->count + 1]; /* count + 1 is a copy of the ith element */
+            /* count + 1 is a copy of the ith element */
+			h->heap_arr[largest] = h->heap_arr[h->count + 1];
 			i = largest;
 		}
 	}
@@ -156,7 +158,8 @@ int heap_remove_index(heap *h, int index)
 
     if(index < 1 || index > h->count)
     {
-        fprintf(stderr, "Invalid index (%d) passed to heap_remove_index! heap count = %d\n", index, h->count);
+        fprintf(stderr, "Invalid index (%d) passed to heap_remove_index! heap count = %d\n",
+                index, h->count);
         return 1;
     }
 
@@ -180,7 +183,8 @@ int heap_remove_index(heap *h, int index)
         {
             /* Swap i with its parent */
             h->heap_arr[i] = h->heap_arr[PARENT(i)];
-            h->heap_arr[PARENT(i)] = h->heap_arr[h->count + 1]; /* count + 1 is a copy of the ith element */
+            /* count + 1 is a copy of the ith element */
+            h->heap_arr[PARENT(i)] = h->heap_arr[h->count + 1];
             i = PARENT(i);
         }
     }
@@ -200,7 +204,8 @@ int heap_remove_index(heap *h, int index)
         {
             /* Swap i with largest */
             h->heap_arr[i] = h->heap_arr[largest];
-            h->heap_arr[largest] = h->heap_arr[h->count + 1]; /* count + 1 is a copy of the ith element */
+            /* count + 1 is a copy of the ith element */
+            h->heap_arr[largest] = h->heap_arr[h->count + 1];
             i = largest;
         }
     }
@@ -324,7 +329,8 @@ int heap_peek_key_at_index(heap *h, int index)
     }
     if(index < 1 || index > h->count)
     {
-        fprintf(stderr, "Invalid index (%d) passed to heap_peek_key_at_index! heap count = %d\n", index, h->count);
+        fprintf(stderr, "Invalid index (%d) passed to heap_peek_key_at_index! heap count = %d\n",
+                index, h->count);
         return -1;
     }
 
@@ -345,7 +351,8 @@ int heap_peek_value_at_index(heap *h, int index)
     }
     if(index < 1 || index > h->count)
     {
-        fprintf(stderr, "Invalid index (%d) passed to heap_peek_value_at_index! heap count = %d\n", index, h->count);
+        fprintf(stderr, "Invalid index (%d) passed to heap_peek_value_at_index! heap count = %d\n",
+                index, h->count);
         return -1;
     }
 

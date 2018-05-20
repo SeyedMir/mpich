@@ -149,15 +149,19 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
         /* Compiling cmn_nbh_mat first */
         for(i = 0; i < cmn_nbh_mat->num_rows; i++)
         {
-            if(cmn_nbh_mat->comb_matrix[i][t].opt != IDLE) /* Then we'll have to do an exchange with a friend */
+            if(cmn_nbh_mat->comb_matrix[i][t].opt != IDLE) /* We have to exchange with a friend */
             {
                 exchange_recv_count = sendcount;
                 exchange_send_count = sendcount;
                 char *rb = ((char *)exchange_tmp_buf) + exchange_send_count * sendtype_extent;
-                mpi_errno = MPIR_Sched_recv(rb, exchange_recv_count, sendtype, cmn_nbh_mat->comb_matrix[i][t].paired_frnd, comm_ptr, s);
+                mpi_errno = MPIR_Sched_recv(rb, exchange_recv_count, sendtype,
+                                            cmn_nbh_mat->comb_matrix[i][t].paired_frnd,
+                                            comm_ptr, s);
                 if (mpi_errno) MPIR_ERR_POP(mpi_errno);
 
-                mpi_errno = MPIR_Sched_send(sendbuf, exchange_send_count, sendtype, cmn_nbh_mat->comb_matrix[i][t].paired_frnd, comm_ptr, s);
+                mpi_errno = MPIR_Sched_send(sendbuf, exchange_send_count, sendtype,
+                                            cmn_nbh_mat->comb_matrix[i][t].paired_frnd,
+                                            comm_ptr, s);
                 if (mpi_errno) MPIR_ERR_POP(mpi_errno);
 
                 /* Schedule a copy from sendbuf to exchange_tmp_buf */
@@ -196,8 +200,11 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
                 {
                     /* Schedule a receive from the corresponding source */
                     incom_recv_count = incom_sched_mat[i][2] * recvcount;
-                    char *rb = ((char*)incom_tmp_buf) + find_incom_tmp_buf_offset(incom_sched_mat, i, recvbuf_extent);
-                    mpi_errno = MPIR_Sched_recv(rb, incom_recv_count, recvtype, incom_sched_mat[i][COMB_LIST_START_IDX], comm_ptr, s);
+                    char *rb = ((char*)incom_tmp_buf) +
+                               find_incom_tmp_buf_offset(incom_sched_mat, i, recvbuf_extent);
+                    mpi_errno = MPIR_Sched_recv(rb, incom_recv_count, recvtype,
+                                                incom_sched_mat[i][COMB_LIST_START_IDX],
+                                                comm_ptr, s);
                     if (mpi_errno) MPIR_ERR_POP(mpi_errno);
                 }
             }
@@ -216,11 +223,14 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
             {
                 if(incom_sched_mat[i][1] == t)
                 {
-                    MPI_Aint offset1 = find_incom_tmp_buf_offset(incom_sched_mat, i, recvbuf_extent);
-                    for(j = 0; j < incom_sched_mat[i][2]; j++) /* Each rank in the combining list */
+                    MPI_Aint offset1 = find_incom_tmp_buf_offset(incom_sched_mat,
+                                                                 i, recvbuf_extent);
+                    for(j = 0; j < incom_sched_mat[i][2]; j++) /* Each rank in combining list */
                     {
-                        int nbr_idx = find_in_arr(srcs, indegree, incom_sched_mat[i][j + COMB_LIST_START_IDX]);
-                        char *copy_from = ((char*)incom_tmp_buf) + offset1 + j * recvcount * recvtype_extent;
+                        int nbr_idx = find_in_arr(srcs, indegree,
+                                                  incom_sched_mat[i][j + COMB_LIST_START_IDX]);
+                        char *copy_from = ((char*)incom_tmp_buf) + offset1 +
+                                          j * recvcount * recvtype_extent;
                         char *copy_to = ((char*)recvbuf) + nbr_idx * recvcount * recvtype_extent;
                         MPIR_Sched_copy(copy_from, recvcount, recvtype,
                                         copy_to, recvcount, recvtype, s);
@@ -258,8 +268,10 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
             /* On incoming neighbors not covered before */
             /* Schedule a receive from the corresponding source */
             incom_recv_count = incom_sched_mat[i][2] * recvcount;
-            char *rb = ((char*)incom_tmp_buf) + find_incom_tmp_buf_offset(incom_sched_mat, i, recvbuf_extent);
-            mpi_errno = MPIR_Sched_recv(rb, incom_recv_count, recvtype, incom_sched_mat[i][COMB_LIST_START_IDX], comm_ptr, s);
+            char *rb = ((char*)incom_tmp_buf) +
+                       find_incom_tmp_buf_offset(incom_sched_mat, i, recvbuf_extent);
+            mpi_errno = MPIR_Sched_recv(rb, incom_recv_count, recvtype,
+                                        incom_sched_mat[i][COMB_LIST_START_IDX], comm_ptr, s);
             if (mpi_errno) MPIR_ERR_POP(mpi_errno);
         }
         else /* Off incoming neighbors not covered before */
@@ -279,8 +291,10 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
             MPI_Aint offset1 = find_incom_tmp_buf_offset(incom_sched_mat, i, recvbuf_extent);
             for(j = 0; j < incom_sched_mat[i][2]; j++)
             {
-                int nbr_idx = find_in_arr(srcs, indegree, incom_sched_mat[i][j + COMB_LIST_START_IDX]);
-                char *copy_from = ((char*)incom_tmp_buf) + offset1 + j * recvcount * recvtype_extent;
+                int nbr_idx = find_in_arr(srcs, indegree,
+                                          incom_sched_mat[i][j + COMB_LIST_START_IDX]);
+                char *copy_from = ((char*)incom_tmp_buf) + offset1 +
+                                  j * recvcount * recvtype_extent;
                 char *copy_to = ((char*)recvbuf) + nbr_idx * recvcount * recvtype_extent;
                 MPIR_Sched_copy(copy_from, recvcount, recvtype,
                                 copy_to, recvcount, recvtype, s);
@@ -300,7 +314,8 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
          */
         double max_sched_time = 0;
         MPIR_Errflag_t errflag = MPIR_ERR_NONE;
-        MPIR_Reduce_impl(&sched_time, &max_sched_time, 1, MPI_DOUBLE, MPI_MAX, 0, comm_ptr, &errflag);
+        MPIR_Reduce_impl(&sched_time, &max_sched_time, 1, MPI_DOUBLE,
+                         MPI_MAX, 0, comm_ptr, &errflag);
         if(comm_ptr->rank == 0)
         {
             printf("Time to build the neighborhood schedule (max): %lf (s)\n", max_sched_time);

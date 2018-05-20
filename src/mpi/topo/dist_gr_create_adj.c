@@ -71,12 +71,14 @@ int add_frnd_to_comb_matrix(Common_nbrhood_matrix *cmn_nbh_mat, int row_idx, int
     int t = cmn_nbh_mat->t;
     if(num_entries >= MAX_COMB_DEGREE)
     {
-        fprintf(stderr, "ERROR: No more space to add new friend to the comb_matrix! num_entries = %d\n", num_entries);
+        fprintf(stderr, "ERROR: No more space to add new friend to the comb_matrix!"
+                " num_entries = %d\n", num_entries);
         return -1;
     }
     if(t >= MAX_COMB_DEGREE)
     {
-            fprintf(stderr, "ERROR: No more space to add a new scheduling step to the comb_matrix! t = %d\n", t);
+            fprintf(stderr, "ERROR: No more space to add a new scheduling step to the comb_matrix!"
+                   " t = %d\n", t);
             return -1;
     }
 
@@ -247,7 +249,8 @@ int MPIR_Get_inNbrs_of_outNbrs(MPIR_Comm *comm_ptr, Common_nbrhood_matrix **cmn_
      */
 
     int mpi_errno = MPI_SUCCESS;
-    int indegree, outdegree, comm_size, i, j, out_idx, in_idx, all_reqs_idx, reqs_max_size, context_offset;
+    int indegree, outdegree, comm_size;
+    int i, j, out_idx, in_idx, all_reqs_idx, reqs_max_size, context_offset;
     comm_size = comm_ptr->local_size;
     MPIR_Topology *topo_ptr = NULL;
     topo_ptr = MPIR_Topology_get(comm_ptr);
@@ -344,19 +347,23 @@ int MPIR_Get_inNbrs_of_outNbrs(MPIR_Comm *comm_ptr, Common_nbrhood_matrix **cmn_
 	}
 	for(out_idx = 0; out_idx < outdegree; out_idx++)
 	{
-		cmn_nbh_mat->comb_matrix[out_idx] = MPL_malloc(MAX_COMB_DEGREE * sizeof(Comb_element), MPL_MEM_OTHER);
+		cmn_nbh_mat->comb_matrix[out_idx] = MPL_malloc(MAX_COMB_DEGREE * sizeof(Comb_element),
+                                                       MPL_MEM_OTHER);
 	    for(j = 0; j < MAX_COMB_DEGREE; j++)
 	    {
 	        cmn_nbh_mat->comb_matrix[out_idx][j].opt = IDLE;
 	        cmn_nbh_mat->comb_matrix[out_idx][j].paired_frnd = -1;
 	    }
-	    cmn_nbh_mat->outnbrs_innbrs_bitmap[out_idx] = MPL_malloc(outnbrs_indegree[out_idx] * sizeof(int), MPL_MEM_OTHER);
+	    cmn_nbh_mat->outnbrs_innbrs_bitmap[out_idx] = MPL_malloc(outnbrs_indegree[out_idx] *
+                                                                 sizeof(int), MPL_MEM_OTHER);
 	    for(j = 0; j < outnbrs_indegree[out_idx]; j++)
 	    {
-	        cmn_nbh_mat->outnbrs_innbrs_bitmap[out_idx][j] = 1; /* Set all incoming neighbors of all outgoing neighbors to active */
+            /* Set all incoming neighbors of all outgoing neighbors to active */
+	        cmn_nbh_mat->outnbrs_innbrs_bitmap[out_idx][j] = 1;
 	    }
 
-	    cmn_nbh_mat->matrix[out_idx] = MPL_malloc(outnbrs_indegree[out_idx] * sizeof(int), MPL_MEM_OTHER);
+	    cmn_nbh_mat->matrix[out_idx] = MPL_malloc(outnbrs_indegree[out_idx] * sizeof(int),
+                                                  MPL_MEM_OTHER);
 		mpi_errno = MPID_Irecv(cmn_nbh_mat->matrix[out_idx], outnbrs_indegree[out_idx],
 	                           MPI_INT, topo_ptr->topo.dist_graph.out[out_idx],
                                2000, comm_ptr, context_offset, &req_ptr);
@@ -410,7 +417,8 @@ int compare_cmn_nbr(const void * a, const void * b)
     if(((Common_neighbor*)a)->rank >  ((Common_neighbor*)b)->rank) return 1;
 }
 
-Common_neighbor* find_cmn_nbrs(Common_nbrhood_matrix *cmn_nbh_mat, int paired_frnd, int num_cmn_nbrs, int *dests)
+Common_neighbor* find_cmn_nbrs(Common_nbrhood_matrix *cmn_nbh_mat,
+                               int paired_frnd, int num_cmn_nbrs, int *dests)
 {
     int i, j, k;
     k = 0;
@@ -421,7 +429,7 @@ Common_neighbor* find_cmn_nbrs(Common_nbrhood_matrix *cmn_nbh_mat, int paired_fr
             continue;
         for(j = 0; j < cmn_nbh_mat->row_sizes[i]; j++)
         {
-            if(cmn_nbh_mat->matrix[i][j] == paired_frnd) /* Then we have the neighbor corresponding to this row in common */
+            if(cmn_nbh_mat->matrix[i][j] == paired_frnd) /* It is a common neighbor */
             {
                 cmn_nbrs[k].index = i;
                 cmn_nbrs[k].rank = dests[i];
@@ -452,7 +460,8 @@ int mask_frnd_in_nbh_matrix(Common_nbrhood_matrix *cmn_nbh_mat, int friend)
 #define FUNCNAME MPIR_Update_common_nbrhood_mat
 #undef FCNAME
 #define FCNAME MPL_QUOTE(FUNCNAME)
-int MPIR_Update_common_nbrhood_mat(Common_nbrhood_matrix* cmn_nbh_mat, MPIR_Comm *comm_ptr, int num_frnds)
+int MPIR_Update_common_nbrhood_mat(Common_nbrhood_matrix* cmn_nbh_mat,
+                                   MPIR_Comm *comm_ptr, int num_frnds)
 {
     /*
      * This function updates the common neighborhood matrix
@@ -463,7 +472,8 @@ int MPIR_Update_common_nbrhood_mat(Common_nbrhood_matrix* cmn_nbh_mat, MPIR_Comm
      */
 
     int mpi_errno = MPI_SUCCESS;
-    int indegree, outdegree, comm_size, i, j, out_idx, in_idx, all_reqs_idx, reqs_max_size, context_offset;
+    int indegree, outdegree, comm_size;
+    int i, j, out_idx, in_idx, all_reqs_idx, reqs_max_size, context_offset;
     comm_size = comm_ptr->local_size;
     MPIR_Topology *topo_ptr = NULL;
     topo_ptr = MPIR_Topology_get(comm_ptr);
@@ -616,7 +626,8 @@ int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
              *   3- Assign the first half to the peer with lower rank,
              *      and the other half to the peer with higher rank.
              */
-            Common_neighbor *cmn_nbrs = find_cmn_nbrs(cmn_nbh_mat, paired_frnd, num_cmn_nbrs, dests);
+            Common_neighbor *cmn_nbrs = find_cmn_nbrs(cmn_nbh_mat, paired_frnd,
+                                                      num_cmn_nbrs, dests);
             qsort(cmn_nbrs, num_cmn_nbrs, sizeof(Common_neighbor), compare_cmn_nbr);
             int start_keep_idx, end_keep_idx;
             int start_off_idx, end_off_idx;
@@ -725,7 +736,8 @@ int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
             }
         }
 #ifdef DEBUG
-        print_vect(self_rank, indegree, cmn_nbh_mat->my_innbrs_bitmap, "cmn_nbh_mat->my_innbrs_bitmap:");
+        print_vect(self_rank, indegree, cmn_nbh_mat->my_innbrs_bitmap,
+                   "cmn_nbh_mat->my_innbrs_bitmap:");
         print_vect(self_rank, indegree, srcs, "srcs:");
 #endif
 
@@ -733,18 +745,22 @@ int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
         if (mpi_errno) MPIR_ERR_POP(mpi_errno);
         all_reqs_idx = 0; /* set index back to zero for future use */
 
-        INFO(printf("ITR %d: Rank %d done with notifying all not-yet-ignored outgoing neighbors\n", loop_count, self_rank);fflush(stdout););
+        INFO(printf("ITR %d: Rank %d done with notifying all not-yet-ignored outgoing neighbors\n",
+                    loop_count, self_rank);fflush(stdout););
 #ifdef DEBUG
-        print_vect(self_rank, indegree, cmn_nbh_mat->my_innbrs_bitmap, "UPDATED cmn_nbh_mat->my_innbrs_bitmap:");
+        print_vect(self_rank, indegree, cmn_nbh_mat->my_innbrs_bitmap,
+                   "UPDATED cmn_nbh_mat->my_innbrs_bitmap:");
         fflush(stdout);
-        print_nbh_mat(comm_ptr->rank, cmn_nbh_mat, -3, "-----------------Current common neighborhood matrix state-----------------");
+        print_nbh_mat(comm_ptr->rank, cmn_nbh_mat, -3,
+                      "----------------Current common neighborhood matrix state----------------");
         fflush(stdout);
 #endif
 
         /* Update cmn_nbh_mat with respect to the new innbrs bitmaps */
         MPIR_Update_common_nbrhood_mat(cmn_nbh_mat, comm_ptr, num_frnds);
 
-        INFO(printf("ITR %d: Rank %d done with MPIR_Update_common_nbrhood_mat\n", loop_count, self_rank);fflush(stdout););
+        INFO(printf("ITR %d: Rank %d done with MPIR_Update_common_nbrhood_mat\n",
+                    loop_count, self_rank);fflush(stdout););
 
         cmn_nbh_mat->t++;
         loop_count++;
@@ -752,7 +768,8 @@ int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
 	/***** End of the main loop of the algorithm *****/
 
 	if(loop_count >= MAX_LOOP_COUNT && num_frnds != 0)
-		printf("Rank %d: Warning! loop_count = %d reached MAX_LOOP_COUNT, while num_frnds = %d\n", self_rank, loop_count, num_frnds);
+		printf("Rank %d: Warning! loop_count = %d reached MAX_LOOP_COUNT, while num_frnds = %d\n",
+               self_rank, loop_count, num_frnds);
 
     if(num_frnds == 0 && loop_count == 1)
         printf("No friend was initially found by rank %d with the threshold set to %d.\n",
@@ -790,11 +807,12 @@ int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
     }while(have_atleast_one_active_in_nbr);
 
 #ifdef DEBUG
-    print_nbh_mat(comm_ptr->rank, cmn_nbh_mat, -3, "-----------------Final common neighborhood matrix state-----------------");
+    print_nbh_mat(comm_ptr->rank, cmn_nbh_mat, -3,
+                  "-----------------Final common neighborhood matrix state-----------------");
 #endif
     /**************** Done with building the message-combining pattern ****************/
 
-	/**************** Going to extract/communicate some information that is required for building the schedule ****************/
+	/***** Extract/communicate some information that is required for building the schedule *****/
     int **sched_msg, *sched_msg_sizes;
     sched_msg = NULL;
     sched_msg_sizes = NULL;
@@ -805,7 +823,8 @@ int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
     {
         if(!cmn_nbh_mat->is_row_offloaded[i])
 		{
-            sched_msg_sizes[i] = COMB_LIST_START_IDX + 1 + cmn_nbh_mat->comb_matrix_num_entries_in_row[i];
+            sched_msg_sizes[i] = COMB_LIST_START_IDX + 1 +
+                                 cmn_nbh_mat->comb_matrix_num_entries_in_row[i];
 		}
         else
 		{
@@ -813,11 +832,12 @@ int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
 			 * which the neighbor is offloaded (it has 'S' as the operation).
 			 * We do not want to communicate this last element.
 			 */
-            sched_msg_sizes[i] = COMB_LIST_START_IDX + cmn_nbh_mat->comb_matrix_num_entries_in_row[i];
+            sched_msg_sizes[i] = COMB_LIST_START_IDX +
+                                 cmn_nbh_mat->comb_matrix_num_entries_in_row[i];
 		}
         sched_msg[i] = MPL_malloc(sched_msg_sizes[i] * sizeof(int), MPL_MEM_OTHER);
 
-        /* The order of elements in the each sched_msg array: (Should really abstract this in future!)
+        /* The order of elements in the each sched_msg array: (Should really change this!)
          * 0: is neighbor off or not
          * 1: t
          * 2: combination list size
@@ -897,7 +917,7 @@ int MPIR_Build_nbh_coll_patt(MPIR_Comm *comm_ptr)
     MPL_free(sched_recv_buff_sizes);
 #endif
 
-    /* Attaching the received sched_recv_buff and cmn_nbh_mat to the topology of the communicator */
+    /* Attaching the received sched_recv_buff and cmn_nbh_mat to the topology of communicator */
     MPIR_CHKPMEM_MALLOC(topo_ptr->topo.dist_graph.nbh_coll_patt,
                         nbh_coll_patt*, sizeof(nbh_coll_patt), mpi_errno,
                         "topo_ptr->topo.dist_graph.nbh_coll_patt", MPL_MEM_OTHER);
@@ -967,7 +987,7 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
     	for(j = 0; j < cmn_nbh_mat->row_sizes[i]; j++)
     	{
     	    if(cmn_nbh_mat->matrix[i][j] == -1 || cmn_nbh_mat->matrix[i][j] == self_rank)
-    	        continue; /* Ignore self rank and disabled friends (the ones I have paired with previously) */
+                continue; /* Ignore self rank and disabled friends */
     		glob_frndshp_arr[cmn_nbh_mat->matrix[i][j]]++;
     		if(glob_frndshp_arr[cmn_nbh_mat->matrix[i][j]] == nbr_frndshp_thr)
                 num_frnds++;
@@ -1076,7 +1096,8 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
                 f1_idx = find_willing_to_pair_idx(frnds_pot_peers, num_frnds, self_rank, 0);
 				/* We need an f1 whose rank is less than self_rank */
                 while(f1_idx != -1 && frnds_ranks[f1_idx] > self_rank)
-                    f1_idx = find_willing_to_pair_idx(frnds_pot_peers, num_frnds, self_rank, f1_idx+1);
+                    f1_idx = find_willing_to_pair_idx(frnds_pot_peers, num_frnds,
+                                                      self_rank, f1_idx+1);
                 if(f1_idx != -1) /* Found a valid f1 */
                 {
                     my_pot_peer = frnds_ranks[f1_idx];
@@ -1100,7 +1121,8 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
                         heap_remove_index(frndshp_maxHeap, idx);
                     if(heap_is_empty(frndshp_maxHeap))
                     {
-                        INFO2(printf("Rank %d failed to pair with anyone; heap is empty (iteration %d)\n", self_rank, itr););
+                        INFO2(printf("Rank %d failed to pair with anyone;"
+                                     "heap is empty (iteration %d)\n", self_rank, itr););
                         my_pot_peer = my_pot_peer_idx = -1;
                         terminal = 1;
                         /* We should not break when someone becomes terminal;
@@ -1157,7 +1179,8 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
             paired = 1;
             if(self_rank == 0)
             {
-                printf("Rank %d: paired successfully with %d in iteration %d with %d common neighbors.\n",
+                printf("Rank %d: paired successfully with %d "
+                        "in iteration %d with %d common neighbors.\n",
                     self_rank, my_pot_peer, itr, glob_frndshp_arr[my_pot_peer]);
             }
         }
@@ -1190,7 +1213,8 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
 #ifdef DEBUG
         int *vals = MPL_malloc(frndshp_maxHeap->count * sizeof(int), MPL_MEM_OTHER);
         if(!heap_get_values_array(frndshp_maxHeap, vals))
-            print_vect(self_rank, frndshp_maxHeap->count, vals, "heap array values (ranks) before removing paired:");
+            print_vect(self_rank, frndshp_maxHeap->count, vals,
+                       "heap array values (ranks) before removing paired:");
         MPL_free(vals);
 #endif
 
@@ -1210,7 +1234,8 @@ int MPIR_pair_frnd(MPIR_Comm *comm_ptr, Common_nbrhood_matrix *cmn_nbh_mat,
 #ifdef DEBUG
         vals = MPL_malloc(frndshp_maxHeap->count * sizeof(int), MPL_MEM_OTHER);
         if(!heap_get_values_array(frndshp_maxHeap, vals))
-            print_vect(self_rank, frndshp_maxHeap->count, vals, "heap array values (ranks) after removing paired:");
+            print_vect(self_rank, frndshp_maxHeap->count, vals,
+                       "heap array values (ranks) after removing paired:");
         MPL_free(vals);
 #endif
 
