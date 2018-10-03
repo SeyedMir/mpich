@@ -45,8 +45,7 @@ int a2aV_make_all_combined_msgs(int t, void *exchange_recvbuf,
     /* allocate combined_sendbuf */
     int combined_sendbuf_count = 0;
     MPI_Aint combined_sendbuf_extent = 0;
-    for(i = onload_start; i <= onload_end; i++)
-    {
+    for(i = onload_start; i <= onload_end; i++) {
         dest_idx = cmn_nbh_mat->sorted_cmn_nbrs[t].cmn_nbrs[i].index;
         combined_sendbuf_count += sendcounts[dest_idx] + friend_off_counts[fc_idx];
         fc_idx++;
@@ -72,8 +71,7 @@ int a2aV_make_all_combined_msgs(int t, void *exchange_recvbuf,
     char *copy_from;
     char *copy_to = ((char*)combined_sendbuf);
     f_displ = fc_idx = 0;
-    for(i = onload_start; i <= onload_end; i++)
-    {
+    for(i = onload_start; i <= onload_end; i++) {
         dest_idx = cmn_nbh_mat->sorted_cmn_nbrs[t].cmn_nbrs[i].index;
         /* copy own data first */
         copy_from = ((char*)sendbuf) + sdispls[dest_idx] * sendtype_extent;
@@ -134,8 +132,7 @@ int a2aV_send_to_onloaded_nbrs(int t, void *combined_sendbuf, int *friend_off_co
     char *send_from = (char*)combined_sendbuf;
     int combined_sendcount;
     fc_idx = 0;
-    for(i = onload_start; i <= onload_end; i++)
-    {
+    for(i = onload_start; i <= onload_end; i++) {
         dest_idx = cmn_nbh_mat->sorted_cmn_nbrs[t].cmn_nbrs[i].index;
         combined_sendcount = sendcounts[dest_idx] + friend_off_counts[fc_idx];
         mpi_errno = MPIR_Sched_send(send_from, combined_sendcount,
@@ -189,8 +186,7 @@ int a2aV_send_own_off_counts(int t, const int *sendcounts, Common_nbrhood_matrix
                         mpi_errno, "own_off_counts", MPL_MEM_OTHER);
     *own_off_counts_ptr = own_off_counts; /* to return to the caller */
     /* populate it from dsts and sendcounts arrays */
-    for(i = offload_start; i <= offload_end; i++)
-    {
+    for(i = offload_start; i <= offload_end; i++) {
         dest_idx = cmn_nbh_mat->sorted_cmn_nbrs[t].cmn_nbrs[i].index;
         own_off_counts[idx++] = sendcounts[dest_idx];
     }
@@ -297,8 +293,7 @@ int a2aV_exchange_data_with_friend(int t, const void *sendbuf,
     /* populate exchange_send_buf from sendbuf */
     char *copy_from;
     char *copy_to = (char*)exchange_sendbuf;
-    for(i = offload_start; i <= offload_end; i++)
-    {
+    for(i = offload_start; i <= offload_end; i++) {
         dest_idx = cmn_nbh_mat->sorted_cmn_nbrs[t].cmn_nbrs[i].index;
         copy_from = ((char*)sendbuf) + sdispls[dest_idx] * sendtype_extent;
         MPIR_Sched_copy(copy_from, sendcounts[dest_idx], sendtype,
@@ -366,8 +361,7 @@ int a2aV_find_incom_recv_count(int *incom_sched_vec, int *srcs,
                                const int *recvcounts, int indegree)
 {
     int i, nbr_idx, sum = 0;
-    for(i = 0; i < incom_sched_vec[2]; i++)
-    {
+    for(i = 0; i < incom_sched_vec[2]; i++) {
         nbr_idx = find_in_arr(srcs, indegree, incom_sched_vec[i + COMB_LIST_START_IDX]);
         sum += recvcounts[nbr_idx];
     }
@@ -476,13 +470,11 @@ int MPIR_Ineighbor_alltoallv_sched_intra_comb(const void *sendbuf, const int sen
     void *exchange_sendbuf = NULL;
     void *exchange_recvbuf = NULL;
     void *combined_sendbuf = NULL;
-    for(t = 0; t < cmn_nbh_mat->t; t++)
-    {
+    for(t = 0; t < cmn_nbh_mat->t; t++) {
         /** Building the schedule one time step at a time **/
 
         /* Compiling cmn_nbh_mat first */
-        if(cmn_nbh_mat->num_onloaded[t] > 0)
-        {
+        if (cmn_nbh_mat->num_onloaded[t] > 0) {
             /***** GET FRIEND_OFF_COUNTS *****/
             mpi_errno = a2aV_get_friend_off_counts(t, cmn_nbh_mat, comm_ptr,
                                               &(all_reqs[all_reqs_idx++]),
@@ -537,12 +529,10 @@ int MPIR_Ineighbor_alltoallv_sched_intra_comb(const void *sendbuf, const int sen
         /* Compiling the incom_sched_mat */
         /* Scheduling necessary recv operations */
         char *rb = (char*)incom_tmp_buf;
-        for(i = 0; i < indegree; i++)
-        {
-            if(!incom_sched_mat[i][0]) /* On incoming neighbors */
-            {
-                if(incom_sched_mat[i][1] == t)
-                {
+        for(i = 0; i < indegree; i++) {
+            if (!incom_sched_mat[i][0]) {
+                /* On incoming neighbors */
+                if (incom_sched_mat[i][1] == t) {
                     /* Schedule a receive from the corresponding source. */
                     int incom_recv_count = a2aV_find_incom_recv_count(incom_sched_mat[i], srcs,
                                                                recvcounts, indegree);
@@ -583,14 +573,11 @@ int MPIR_Ineighbor_alltoallv_sched_intra_comb(const void *sendbuf, const int sen
         /* Scheduling message copies from incom_tmp_buf to final recv_buf */
         char *copy_from = (char*)incom_tmp_buf;
         char *copy_to;
-        for(i = 0; i < indegree; i++)
-        {
-            if(!incom_sched_mat[i][0]) /* On incoming neighbors */
-            {
-                if(incom_sched_mat[i][1] == t)
-                {
-                    for(j = 0; j < incom_sched_mat[i][2]; j++)
-                    {
+        for(i = 0; i < indegree; i++) {
+            if (!incom_sched_mat[i][0]) {
+                /* On incoming neighbors */
+                if (incom_sched_mat[i][1] == t) {
+                    for(j = 0; j < incom_sched_mat[i][2]; j++) {
                         int nbr_idx = find_in_arr(srcs, indegree,
                                                   incom_sched_mat[i][j + COMB_LIST_START_IDX]);
 #ifdef SCHED_DEBUG
@@ -624,10 +611,9 @@ int MPIR_Ineighbor_alltoallv_sched_intra_comb(const void *sendbuf, const int sen
 
     /* Schedule a send for any residual outgoing neighbors */
     MPIR_SCHED_BARRIER(s);
-    for(i = 0; i < cmn_nbh_mat->num_rows; i++)
-    {
-        if(!cmn_nbh_mat->ignore_row[i]) /* out neighbor still active */
-        {
+    for(i = 0; i < cmn_nbh_mat->num_rows; i++) {
+        if (!cmn_nbh_mat->ignore_row[i]) {
+            /* out neighbor still active */
             mpi_errno = MPIR_Sched_send(((char*)sendbuf) + sdispls[i] * sendtype_extent,
                                         sendcounts[i], sendtype, dsts[i], comm_ptr, s);
             if (mpi_errno) MPIR_ERR_POP(mpi_errno);
@@ -652,11 +638,9 @@ int MPIR_Ineighbor_alltoallv_sched_intra_comb(const void *sendbuf, const int sen
      * overlap among the recv and copy operations.
      */
     char *rb = (char*)incom_tmp_buf;
-    for(i = 0; i < indegree; i++)
-    {
+    for(i = 0; i < indegree; i++) {
         /* ON incoming neighbors not covered before */
-        if(!incom_sched_mat[i][0] && incom_sched_mat[i][1] >= cmn_nbh_mat->t)
-        {
+        if (!incom_sched_mat[i][0] && incom_sched_mat[i][1] >= cmn_nbh_mat->t) {
             /* Schedule a receive from the corresponding source. */
             int incom_recv_count = a2aV_find_incom_recv_count(incom_sched_mat[i], srcs,
                                                            recvcounts, indegree);
@@ -696,13 +680,10 @@ int MPIR_Ineighbor_alltoallv_sched_intra_comb(const void *sendbuf, const int sen
     /* Scheduling message copies from incom_tmp_buf to final recv_buf */
     char *copy_from = (char*)incom_tmp_buf;
     char *copy_to;
-    for(i = 0; i < indegree; i++)
-    {
+    for(i = 0; i < indegree; i++) {
         /* ON incoming neighbors not covered before */
-        if(!incom_sched_mat[i][0] && incom_sched_mat[i][1] >= cmn_nbh_mat->t)
-        {
-            for(j = 0; j < incom_sched_mat[i][2]; j++)
-            {
+        if (!incom_sched_mat[i][0] && incom_sched_mat[i][1] >= cmn_nbh_mat->t) {
+            for(j = 0; j < incom_sched_mat[i][2]; j++) {
                 int nbr_idx = find_in_arr(srcs, indegree,
                                           incom_sched_mat[i][j + COMB_LIST_START_IDX]);
                 copy_to = ((char*)recvbuf) + rdispls[nbr_idx] * recvtype_extent;

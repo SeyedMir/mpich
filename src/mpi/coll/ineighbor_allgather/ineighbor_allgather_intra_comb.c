@@ -18,10 +18,9 @@ MPI_Aint find_incom_tmp_buf_size(int **incom_sched_mat, int num_rows, MPI_Aint s
     int i;
     MPI_Aint buff_size;
     buff_size = 0;
-    for(i = 0; i < num_rows; i++)
-    {
-        if(incom_sched_mat[i][1] != -1) /* Initially-ON incoming neighbors */
-        {
+    for(i = 0; i < num_rows; i++) {
+        if (incom_sched_mat[i][1] != -1) {
+            /* Initially-ON incoming neighbors */
             buff_size += incom_sched_mat[i][2] * size_per_rank;
         }
     }
@@ -33,10 +32,9 @@ MPI_Aint find_incom_tmp_buf_offset(int **incom_sched_mat, int nbr_index, MPI_Ain
     int i;
     MPI_Aint offset;
     offset = 0;
-    for(i = 0; i < nbr_index; i++)
-    {
-        if(incom_sched_mat[i][1] != -1) /* Initially-ON incoming neighbors */
-        {
+    for(i = 0; i < nbr_index; i++) {
+        if (incom_sched_mat[i][1] != -1) {
+            /* Initially-ON incoming neighbors */
             offset += incom_sched_mat[i][2] * size_per_rank;
         }
     }
@@ -129,15 +127,13 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
                               mpi_errno, "incom_tmp_buf", MPL_MEM_OTHER);
 
     int t;
-    for(t = 0; t < cmn_nbh_mat->t; t++)
-    {
+    for(t = 0; t < cmn_nbh_mat->t; t++) {
         /** Building the schedule one time step at a time **/
 
         /* Compiling cmn_nbh_mat first */
-        for(i = 0; i < cmn_nbh_mat->num_rows; i++)
-        {
-            if(cmn_nbh_mat->comb_matrix[i][t].opt != IDLE) /* We have to exchange with a friend */
-            {
+        for(i = 0; i < cmn_nbh_mat->num_rows; i++) {
+            if (cmn_nbh_mat->comb_matrix[i][t].opt != IDLE) {
+                /* We have to exchange with a friend */
                 exchange_recv_count = sendcount;
                 exchange_send_count = sendcount;
                 char *rb = ((char *)exchange_tmp_buf) + exchange_send_count * sendtype_extent;
@@ -161,8 +157,7 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
 
                 /* Schedule to send the combined message to corresponding neighbors */
                 int k;
-                for(k = i; k < cmn_nbh_mat->num_rows; k++)
-                {
+                for(k = i; k < cmn_nbh_mat->num_rows; k++) {
                     if(!cmn_nbh_mat->is_row_offloaded[k] &&
                         cmn_nbh_mat->comb_matrix[k][t].opt != IDLE)
                     {
@@ -179,12 +174,10 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
 
         /* Compiling the incom_sched_mat */
         /* Scheduling the necessary recv operations */
-        for(i = 0; i < indegree; i++)
-        {
-            if(!incom_sched_mat[i][0]) /* On incoming neighbors */
-            {
-                if(incom_sched_mat[i][1] == t)
-                {
+        for(i = 0; i < indegree; i++) {
+            if (!incom_sched_mat[i][0]) {
+                /* On incoming neighbors */
+                if (incom_sched_mat[i][1] == t) {
                     /* Schedule a receive from the corresponding source */
                     incom_recv_count = incom_sched_mat[i][2] * recvcount;
                     char *rb = ((char*)incom_tmp_buf) +
@@ -204,12 +197,10 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
         MPIR_SCHED_BARRIER(s);
 
         /* Scheduling message copies from incom_tmp_buf to final recv_buf */
-        for(i = 0; i < indegree; i++)
-        {
-            if(!incom_sched_mat[i][0]) /* On incoming neighbors */
-            {
-                if(incom_sched_mat[i][1] == t)
-                {
+        for(i = 0; i < indegree; i++) {
+            if (!incom_sched_mat[i][0]) {
+                /* On incoming neighbors */
+                if (incom_sched_mat[i][1] == t) {
                     MPI_Aint offset1 = find_incom_tmp_buf_offset(incom_sched_mat,
                                                                  i, recvbuf_extent);
                     for(j = 0; j < incom_sched_mat[i][2]; j++) /* Each rank in combining list */
@@ -232,10 +223,9 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
     MPIR_SCHED_BARRIER(s);
 
     /* Schedule a send for any residual outgoing neighbors */
-    for(i = 0; i < cmn_nbh_mat->num_rows; i++)
-    {
-        if(!cmn_nbh_mat->ignore_row[i]) /* out neighbor still active */
-        {
+    for(i = 0; i < cmn_nbh_mat->num_rows; i++) {
+        if (!cmn_nbh_mat->ignore_row[i]) {
+            /* out neighbor still active */
             mpi_errno = MPIR_Sched_send(sendbuf, sendcount, sendtype,
                                         dsts[i], comm_ptr, s);
             if (mpi_errno) MPIR_ERR_POP(mpi_errno);
@@ -248,10 +238,8 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
      * residual recvs in a stepwise fashion to create some
      * overlap among the recv and copy operations.
      */
-    for(i = 0; i < indegree; i++)
-    {
-        if(!incom_sched_mat[i][0] && incom_sched_mat[i][1] >= cmn_nbh_mat->t)
-        {
+    for(i = 0; i < indegree; i++) {
+        if (!incom_sched_mat[i][0] && incom_sched_mat[i][1] >= cmn_nbh_mat->t) {
             /* On incoming neighbors not covered before */
             /* Schedule a receive from the corresponding source */
             incom_recv_count = incom_sched_mat[i][2] * recvcount;
@@ -270,14 +258,11 @@ int MPIR_Ineighbor_allgather_sched_intra_comb(const void *sendbuf, int sendcount
     MPIR_SCHED_BARRIER(s);
 
     /* Scheduling message copies from incom_tmp_buf to final recv_buf */
-    for(i = 0; i < indegree; i++)
-    {
-        if(!incom_sched_mat[i][0] && incom_sched_mat[i][1] >= cmn_nbh_mat->t)
-        {
+    for(i = 0; i < indegree; i++) {
+        if (!incom_sched_mat[i][0] && incom_sched_mat[i][1] >= cmn_nbh_mat->t) {
             /* On incoming neighbors not covered before */
             MPI_Aint offset1 = find_incom_tmp_buf_offset(incom_sched_mat, i, recvbuf_extent);
-            for(j = 0; j < incom_sched_mat[i][2]; j++)
-            {
+            for(j = 0; j < incom_sched_mat[i][2]; j++) {
                 int nbr_idx = find_in_arr(srcs, indegree,
                                           incom_sched_mat[i][j + COMB_LIST_START_IDX]);
                 char *copy_from = ((char*)incom_tmp_buf) + offset1 +

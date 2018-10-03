@@ -35,15 +35,13 @@ int heap_init(heap *h, int arr_size)
 
 int heap_free_array(heap *h)
 {
-    if(h == NULL)
-    {
+    if (h == NULL) {
         fprintf(stderr, "ERROR: heap handle is NULL in heap_free!\n");
         return -1;
     }
 
     int i;
-    for(i = 1; i <= h->count; i++)
-    {
+    for(i = 1; i <= h->count; i++) {
         MPL_free(h->heap_arr[i]);
     }
     MPL_free(h->heap_arr);
@@ -53,8 +51,7 @@ int heap_free_array(heap *h)
 
 int heap_is_empty(heap *h)
 {
-    if(h == NULL)
-    {
+    if (h == NULL) {
         fprintf(stderr, "ERROR: heap handle is NULL in heap_insert!\n");
         return -1;
     }
@@ -83,12 +80,10 @@ int heap_insert(heap *h,  heap_element *e)
 
 	/* Shifting up if necessary */
 	int i = h->count;
-	while(PARENT(i) >= 1)
-	{
-		if(h->heap_arr[i]->key <= h->heap_arr[PARENT(i)]->key)
+    while (PARENT(i) >= 1) {
+		if(h->heap_arr[i]->key <= h->heap_arr[PARENT(i)]->key) {
 			break;
-		else
-		{
+        } else {
 			/* Swap i with its parent */
 			h->heap_arr[i] = h->heap_arr[PARENT(i)];
             /* The new element to-be-inserted (e) is always a copy of the ith element */
@@ -119,18 +114,16 @@ int heap_remove_max(heap *h)
 
 	/* Shifting down if necessary */
 	int i = 1;
-	while(LCHILD(i) <= h->count)
-	{
+    while (LCHILD(i) <= h->count) {
 		/* find the largest child first */
 		int largest = LCHILD(i);
 		if(RCHILD(i) <= h->count)
 		    if(h->heap_arr[RCHILD(i)]->key > h->heap_arr[largest]->key)
 		        largest = RCHILD(i);
 
-		if(h->heap_arr[i]->key >= h->heap_arr[largest]->key)
+		if(h->heap_arr[i]->key >= h->heap_arr[largest]->key) {
 			break;
-		else
-		{
+        } else {
 			/* swap i with largest */
 			h->heap_arr[i] = h->heap_arr[largest];
             /* count + 1 is a copy of the ith element */
@@ -145,19 +138,16 @@ int heap_remove_max(heap *h)
 
 int heap_remove_index(heap *h, int index)
 {
-    if(h == NULL)
-    {
+    if (h == NULL) {
         fprintf(stderr, "ERROR: heap handle is NULL in heap_max_remove!\n");
         return 1;
     }
-    if(h->count == 0)
-    {
+    if (h->count == 0) {
         INFO(fprintf(stderr, "Cannot remove max; Heap is empty\n"));
         return 1;
     }
 
-    if(index < 1 || index > h->count)
-    {
+    if (index < 1 || index > h->count) {
         fprintf(stderr, "Invalid index (%d) passed to heap_remove_index! heap count = %d\n",
                 index, h->count);
         return 1;
@@ -167,20 +157,18 @@ int heap_remove_index(heap *h, int index)
     h->heap_arr[index] = h->heap_arr[h->count];
     h->count = h->count - 1;
 
-    if(index == h->count + 1) /* We are removing the last element */
-    {
+    if (index == h->count + 1) {
+        /* We are removing the last element */
         MPL_free(removed_element);
         return 0;
     }
 
     int i = index;
     /* Shifting up if necessary */
-    while(PARENT(i) >= 1)
-    {
-        if(h->heap_arr[i]->key <= h->heap_arr[PARENT(i)]->key)
+    while (PARENT(i) >= 1) {
+        if(h->heap_arr[i]->key <= h->heap_arr[PARENT(i)]->key) {
             break;
-        else
-        {
+        } else {
             /* Swap i with its parent */
             h->heap_arr[i] = h->heap_arr[PARENT(i)];
             /* count + 1 is a copy of the ith element */
@@ -190,8 +178,7 @@ int heap_remove_index(heap *h, int index)
     }
 
     /* Shifting down if necessary */
-    while(LCHILD(i) <= h->count)
-    {
+    while (LCHILD(i) <= h->count) {
         /* find the largest child first */
         int largest = LCHILD(i);
         if(RCHILD(i) <= h->count)
@@ -217,8 +204,7 @@ int heap_remove_index(heap *h, int index)
 int heap_find_value(heap *h, int value)
 {
     int i;
-    for(i = 1; i <= h->count; i++)
-    {
+    for(i = 1; i <= h->count; i++) {
         if(h->heap_arr[i]->value == value)
             return i;
     }
@@ -227,20 +213,17 @@ int heap_find_value(heap *h, int value)
 
 int heap_get_keys_array(heap *h, int *keys)
 {
-    if(h == NULL)
-    {
+    if (h == NULL) {
         fprintf(stderr, "ERROR: heap handle is NULL in heap_get_keys_array!\n");
         return -1;
     }
-    if(heap_is_empty(h))
-    {
+    if (heap_is_empty(h)) {
         INFO(printf("Cannot get keys array; Heap is empty\n"));
         return -1;
     }
 
     int i;
-    for(i = 1; i <= h->count; i++)
-    {
+    for(i = 1; i <= h->count; i++) {
         keys[i-1] = h->heap_arr[i]->key;
     }
     return 0;
@@ -248,20 +231,17 @@ int heap_get_keys_array(heap *h, int *keys)
 
 int heap_get_values_array(heap *h, int *values)
 {
-    if(h == NULL)
-    {
+    if (h == NULL) {
         fprintf(stderr, "ERROR: heap handle is NULL in heap_get_values_array!\n");
         return -1;
     }
-    if(heap_is_empty(h))
-    {
+    if (heap_is_empty(h)) {
         INFO(printf("Cannot get values array; Heap is empty\n"));
         return -1;
     }
 
     int i;
-    for(i = 1; i <= h->count; i++)
-    {
+    for(i = 1; i <= h->count; i++) {
         values[i-1] = h->heap_arr[i]->value;
     }
     return 0;
@@ -301,13 +281,11 @@ int heap_peek_max_value(heap *h)
 
 int heap_peek_max_paired(heap *h)
 {
-    if(h == NULL)
-    {
+    if (h == NULL) {
         fprintf(stderr, "ERROR: heap handle is NULL in heap_peek_max_paired!\n");
         return -1;
     }
-    if(h->count == 0)
-    {
+    if (h->count == 0) {
         INFO(printf("Cannot peek max paired; Heap is empty\n"));
         return -1;
     }
@@ -317,18 +295,15 @@ int heap_peek_max_paired(heap *h)
 
 int heap_peek_key_at_index(heap *h, int index)
 {
-    if(h == NULL)
-    {
+    if (h == NULL) {
         fprintf(stderr, "ERROR: heap handle is NULL in heap_peek_key_at_index\n");
         return -1;
     }
-    if(h->count == 0)
-    {
+    if (h->count == 0) {
         INFO(printf("Cannot peek key; Heap is empty\n"));
         return -1;
     }
-    if(index < 1 || index > h->count)
-    {
+    if (index < 1 || index > h->count) {
         fprintf(stderr, "Invalid index (%d) passed to heap_peek_key_at_index! heap count = %d\n",
                 index, h->count);
         return -1;
@@ -339,18 +314,15 @@ int heap_peek_key_at_index(heap *h, int index)
 
 int heap_peek_value_at_index(heap *h, int index)
 {
-    if(h == NULL)
-    {
+    if (h == NULL) {
         fprintf(stderr, "ERROR: heap handle is NULL in heap_peek_value_at_index\n");
         return -1;
     }
-    if(h->count == 0)
-    {
+    if (h->count == 0) {
         INFO(printf("Cannot peek value; Heap is empty\n"));
         return -1;
     }
-    if(index < 1 || index > h->count)
-    {
+    if (index < 1 || index > h->count) {
         fprintf(stderr, "Invalid index (%d) passed to heap_peek_value_at_index! heap count = %d\n",
                 index, h->count);
         return -1;
